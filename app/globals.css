@@ -5,12 +5,7 @@
   --foreground: #171717;
 }
 .bg-custom-gradient {
-  background: linear-gradient(
-    to bottom,
-    #0f172a 0%,
-    #1e293b 70%,
-    #1e293b 100%
-  );
+  background: linear-gradient(to bottom, #0f172a 0%, #1e293b 70%, #1e293b 100%);
 }
 
 .text-gradient {
@@ -35,6 +30,7 @@
 @theme {
   --color-darkblue-500: #0020fd;
   --color-bgblue-500: #171717;
+  --color-lightgrey-500: #242426;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -46,4 +42,25 @@
 
 body {
   background-color: #171717;
+}
+
+.custom-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(
+    100,
+    116,
+    139,
+    0.5
+  ); /* Tailwind slate-500 opacity-50 */
+  border-radius: 8px;
+  border: 2px solid rgba(0, 0, 0, 0);
+  background-clip: padding-box;
 }

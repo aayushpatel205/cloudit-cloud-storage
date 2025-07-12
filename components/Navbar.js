@@ -3,10 +3,11 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useAuth, useClerk } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 const Navbar = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const { signOut } = useClerk();
   const { isSignedIn, userId } = useAuth();
 
@@ -18,7 +19,7 @@ const Navbar = () => {
 
   return (
     <div
-      className="flex justify-between items-center px-14 h-20 
+      className="fixed top-0 left-0 w-full bg-bgblue-500 flex justify-between items-center px-14 h-20 
       border-b-1 border-b-gray-700"
     >
       <Link href="/">
@@ -30,6 +31,14 @@ const Navbar = () => {
 
       {isSignedIn ? (
         <div className="flex gap-4 items-center">
+          {pathname !== "/dashboard" && (
+            <Link href="/dashboard">
+              <button className="bg-darkblue-500 px-4 py-2 rounded-full text-white font-semibold text-sm cursor-pointer transition">
+                Dashboard
+              </button>
+            </Link>
+          )}
+
           <button
             onClick={handleLogout}
             className="border-darkblue-500 border-2 px-4 py-2 rounded-full text-white font-semibold text-sm cursor-pointer transition"

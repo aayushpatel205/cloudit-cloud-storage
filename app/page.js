@@ -8,7 +8,7 @@ const Home = () => {
   const { isSignedIn, userId } = useAuth();
   console.log("The user is signed in: ", isSignedIn, userId);
   return (
-    <div className="flex justify-center items-center gap-12 pt-20">
+    <div className="flex justify-center items-center gap-12 mt-32">
       <div className="flex flex-col gap-5">
         <span className="text-5xl font-semibold">
           <span className="text-darkblue-500 text-gradient">Store </span>your files.

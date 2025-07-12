@@ -6,10 +6,22 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.23.2",
+    "@imagekit/next": "^2.1.2",
+    "@neondatabase/serverless": "^1.0.1",
+    "axios": "^1.10.0",
+    "date-fns": "^4.1.0",
+    "dotenv": "^17.0.1",
+    "drizzle-orm": "^0.44.2",
+    "framer-motion": "^12.23.0",
+    "imagekit": "^6.0.0",
     "next": "15.3.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -18,6 +30,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "drizzle-kit": "^0.31.4",
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
     "tailwindcss": "^4"
