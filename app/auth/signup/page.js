@@ -38,11 +38,11 @@ const SignUp = () => {
   };
 
   return (
-    <div className="bg-custom-gradient h-[calc(100vh-5rem)] w-screen justify-center flex">
+    <div className="bg-custom-gradient h-screen w-screen justify-center flex">
       {pendingVerification ? (
         <VerificationCodeInput />
       ) : (
-        <div className="px-10 py-5 h-[80%] border-1 border-gray-700 w-[30%] mt-16 bg-bgblue-500 rounded-xl flex flex-col gap-4">
+        <div className="px-10 py-5 h-[70%] border-1 border-gray-700 w-[30%] mt-26 bg-bgblue-500 rounded-xl flex flex-col gap-4">
           <p className="text-white font-semibold text-2xl text-center">
             Sign Up
           </p>

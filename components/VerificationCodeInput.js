@@ -45,7 +45,8 @@ const VerificationCodeInput = () => {
   };
 
   return (
-    <div className="flex flex-col justify-center items-center gap-4 bg-bgblue-500 h-[30%] mt-16 px-10 py-5 rounded-xl">
+    <div className="flex flex-col justify-center items-center gap-4 bg-bgblue-500 h-[30%] mt-26 px-10 py-5 rounded-xl">
+      <p className="text-white font-semibold text-2xl">Verification Code</p>
       <div className="flex gap-2">
         {codes.map((code, index) => (
           <input

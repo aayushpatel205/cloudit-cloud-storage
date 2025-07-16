@@ -1,7 +1,7 @@
 import { db } from "@/db/index";
 import { NextResponse } from "next/server";
 import { folders } from "@/db/schema"; // assuming your folders schema is here
-import { eq } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 
 export async function POST(req) {
   try {
@@ -40,6 +40,7 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
+    const parentId = searchParams.get("parentId");
 
     if (!userId) {
       return NextResponse.json(
@@ -51,8 +52,13 @@ export async function GET(request) {
     const userFolders = await db
       .select()
       .from(folders)
-      .where(eq(folders.userId, userId));
-    console.log("folders", folders);
+      .where(
+        and(
+          eq(folders.userId, userId),
+          parentId ? eq(folders.parentId, parentId) : isNull(folders.parentId)
+        )
+      );
+    // console.log("folders", folders);
 
     return NextResponse.json({ userFolders }, { status: 200 });
   } catch (error) {

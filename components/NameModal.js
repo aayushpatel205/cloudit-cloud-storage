@@ -6,11 +6,11 @@ import { IoMdArrowForward } from "react-icons/io";
 import { useUser } from "@clerk/nextjs";
 import axios from "axios";
 
-const NameModal = ({ isOpen, onClose, onConfirm }) => {
+const NameModal = ({ isOpen, onClose, parentId }) => {
   const [folderName, setFolderName] = useState("");
   const { user } = useUser();
 
-  const handleConfirm = (parentId) => {
+  const handleConfirm = () => {
     if (!folderName) {
       return;
     }
@@ -96,7 +96,7 @@ const NameModal = ({ isOpen, onClose, onConfirm }) => {
                 </button>
                 <button
                   onClick={() => {
-                    handleConfirm(null);
+                    handleConfirm("eac6ba99-72c4-4019-8c22-d71e03c2d2b2");
                   }}
                   className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg  bg-darkblue-500 transition text-sm"
                 >

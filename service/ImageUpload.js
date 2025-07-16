@@ -8,7 +8,9 @@ console.log("Next public key: ", process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY);
 
 export const handleUpload = async (file, fileName, fileTag) => {
   try {
-    const authRes = await axios.get("/api/imagekit-auth");
+    const authRes = await axios.get(
+      `${process.env.NEXT_PUBLIC_SITE_URL}/api/imagekit-auth`
+    );
     const auth = await authRes.data;
 
     const imagekit = new ImageKit({
@@ -18,8 +20,9 @@ export const handleUpload = async (file, fileName, fileTag) => {
       authenticationEndpoint: "/api/imagekit-auth",
     });
 
+    const buffer = Buffer.from(await file.arrayBuffer());
     const result = await imagekit.upload({
-      file: file,
+      file: buffer,
       fileName: fileName,
       tags: [fileTag],
       signature: auth.signature,

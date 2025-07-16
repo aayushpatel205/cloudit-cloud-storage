@@ -1,35 +1,23 @@
 "use client";
-import { useState, useRef, useEffect, use } from "react";
+import axios from "axios";
+import { useState, useRef, useEffect } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { MdOutlineUploadFile } from "react-icons/md";
 import { FaRegFileAlt, FaRegFile, FaRegStar } from "react-icons/fa";
 import { FiTrash, FiRefreshCw } from "react-icons/fi";
-import { handleUpload } from "@/service/ImageUpload";
 import NameModal from "@/components/NameModal";
 import { useUser } from "@clerk/nextjs";
-import axios from "axios";
 import FolderDisplayComponent from "@/components/FolderDisplayComponent";
+import FileDisplayComponent from "@/components/FileDisplayComponent";
+import imageCompression from "browser-image-compression";
+import UserFiles from "@/components/UserFiles";
+import ImagePreviewModal from "@/components/ImagePreviewModal";
 
 const Dashboard = () => {
   const fileInputRef = useRef(null);
-  const [active, setActive] = useState("allfiles");
   const [selectedFile, setSelectedFile] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [userFiles, setUserFiles] = useState([]);
-  const [refresh , setRefresh] = useState(Date.now());
   const { user } = useUser();
-
-  useEffect(() => {
-    const getFolders = async () => {
-      const response = await axios.get("/api/folders", {
-        params: {
-          userId: user?.id,
-        },
-      });
-      setUserFiles(response.data.userFolders);
-    };
-    getFolders();
-  }, [user , refresh]);
 
   const handleCreate = (name) => {
     console.log("Name entered:", name);
@@ -40,9 +28,38 @@ const Dashboard = () => {
     if (file) {
       setSelectedFile(file);
       console.log("Selected file:", file);
+    }
+  };
 
-      // const url = await axios.post("/api/folders",{});
-      // console.log("Uploaded URL:", url);
+  const uploadFile = async () => {
+    if (!selectedFile) return;
+
+    try {
+      const options = {
+        maxSizeMB: 1, // Max size in MB
+        maxWidthOrHeight: 1024, // Optional resize
+        useWebWorker: true, // Better performance
+      };
+
+      const compressedFile = await imageCompression(selectedFile, options);
+      console.log("Original size:", selectedFile.size / 1024, "KB");
+      console.log("Compressed size:", compressedFile.size / 1024, "KB");
+
+      const formData = new FormData();
+      formData.append("selectedFile", compressedFile);
+      formData.append("fileName", compressedFile.name);
+      formData.append("fileTag", "image");
+      formData.append("userId", user.id);
+      formData.append("folderId", "a3dd6b32-6e7f-47ef-9be2-c0dc7dcf6509");
+
+      const response = await axios.post("/api/files", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      console.log("File uploaded successfully:", response.data);
+      setSelectedFile(null);
+    } catch (error) {
+      console.error("Error uploading file:", error);
     }
   };
 
@@ -119,13 +136,7 @@ const Dashboard = () => {
             <div className="flex gap-3 mt-3">
               <button
                 onClick={async () => {
-                  const url = await handleUpload(
-                    selectedFile,
-                    "userUpload",
-                    "image"
-                  );
-                  console.log("Uploaded URL:", url);
-                  setSelectedFile(null);
+                  await uploadFile();
                 }}
                 className="bg-darkblue-500 px-4 py-2 rounded-full text-white font-semibold text-xs cursor-pointer transition"
               >
@@ -150,95 +161,13 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="h-[520px] border-1 border-gray-700 border-dashed rounded-xl flex flex-col w-[65%] px-5 py-5 gap-7">
-          <div className="flex gap-3 items-center">
-            <FaRegFileAlt className=" text-darkblue-500" size={30} />
-            <p className="text-2xl font-semibold">Your Files</p>
-          </div>
-
-          <div className="w-full flex justify-between px-10">
-            <div
-              onClick={() => setActive("allfiles")}
-              className={`cursor-pointer flex gap-3 items-center justify-center pb-1 w-[25%] ${
-                active === "allfiles"
-                  ? "text-darkblue-500 border-b-3 border-b-darkblue-500"
-                  : "text-gray-500"
-              }`}
-            >
-              <FaRegFile />
-              <p>All Files</p>
-            </div>
-
-            <div
-              onClick={() => setActive("starred")}
-              className={`cursor-pointer flex gap-3 items-center justify-center pb-1 w-[25%] ${
-                active === "starred"
-                  ? "text-darkblue-500 border-b-3 border-b-darkblue-500"
-                  : "text-gray-500"
-              }`}
-            >
-              <FaRegStar />
-              <p>Starred</p>
-            </div>
-
-            <div
-              onClick={() => setActive("trash")}
-              className={`cursor-pointer flex gap-3 items-center justify-center pb-1 w-[25%] ${
-                active === "trash"
-                  ? "text-darkblue-500 border-b-3 border-b-darkblue-500"
-                  : "text-gray-500"
-              }`}
-            >
-              <FiTrash />
-              <p>Trash</p>
-            </div>
-          </div>
-
-          <div>
-            <button className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md">
-              Home
-            </button>
-          </div>
-
-          <div className="flex justify-between border-b border-b-gray-700 pb-4">
-            <p className="text-2xl font-semibold">All Files</p>
-            <button onClick={() => setRefresh(Date.now())} className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex items-center gap-2 cursor-pointer">
-              <FiRefreshCw />
-              <p>Refresh</p>
-            </button>
-          </div>
-
-          <div className="border border-gray-700 h-[225px] rounded-lg p-3">
-            <div className="bg-[rgba(255,255,255,0.05)] h-[40px] rounded-md px-4 flex items-center font-semibold text-sm sticky top-0 z-10 backdrop-blur">
-              <p className="w-[24%]">Name</p>
-              <p className="w-[15%]">Type</p>
-              <p className="w-[15%]">Size</p>
-              <p className="w-[23%]">Added</p>
-              <p className="w-[23%]">Actions</p>
-            </div>
-
-            <div className="flex h-[68%] flex-col mt-3 gap-2 overflow-y-scroll">
-              {userFiles.length > 0 ? (
-                userFiles.map((file, index) => (
-                  <FolderDisplayComponent
-                    key={index}
-                    file={file}
-                    setActive={setActive}
-                  />
-                ))
-              ) : (
-                <p className="text-gray-400 text-sm text-center py-4">
-                  No files or folders found.
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
+        <UserFiles />
       </div>
       <NameModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onConfirm={handleCreate}
+        parentId={null}
+        // onConfirm={handleCreate}
       />
     </ProtectedRoute>
   );
