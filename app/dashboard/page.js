@@ -3,26 +3,24 @@ import axios from "axios";
 import { useState, useRef, useEffect } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { MdOutlineUploadFile } from "react-icons/md";
-import { FaRegFileAlt, FaRegFile, FaRegStar } from "react-icons/fa";
-import { FiTrash, FiRefreshCw } from "react-icons/fi";
 import NameModal from "@/components/NameModal";
 import { useUser } from "@clerk/nextjs";
-import FolderDisplayComponent from "@/components/FolderDisplayComponent";
-import FileDisplayComponent from "@/components/FileDisplayComponent";
 import imageCompression from "browser-image-compression";
 import UserFiles from "@/components/UserFiles";
-import ImagePreviewModal from "@/components/ImagePreviewModal";
+import { useFileContext } from "@/context/FileContext";
 
 const Dashboard = () => {
   const fileInputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { userFiles, setUserFiles, currentFolderPath, setCurrentFolderPath } =
+    useFileContext();
   const { user } = useUser();
 
-  const handleCreate = (name) => {
-    console.log("Name entered:", name);
-    // your folder/file creation logic here
-  };
+  // const handleCreate = (name) => {
+  //   console.log("Name entered:", name);
+  //   // your folder/file creation logic here
+  // };
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -50,7 +48,7 @@ const Dashboard = () => {
       formData.append("fileName", compressedFile.name);
       formData.append("fileTag", "image");
       formData.append("userId", user.id);
-      formData.append("folderId", "a3dd6b32-6e7f-47ef-9be2-c0dc7dcf6509");
+      formData.append("folderId", null);
 
       const response = await axios.post("/api/files", formData, {
         headers: { "Content-Type": "multipart/form-data" },

@@ -1,12 +1,11 @@
 import { handleUpload } from "@/service/ImageUpload";
 import { db } from "@/db/index";
 import { NextResponse } from "next/server";
-import { files } from "@/db/schema";
-import { eq, and, isNull } from "drizzle-orm";
+import { files, starredFiles } from "@/db/schema";
+import { eq, and, isNull, isNotNull } from "drizzle-orm";
 
 export async function POST(req) {
   const formData = await req.formData();
-  console.log("formData", formData);
   const selectedFile = formData.get("selectedFile"); // key as appended from frontend FormData
   const fileName = formData.get("fileName");
   const fileTag = formData.get("fileTag");
@@ -54,9 +53,27 @@ export async function GET(request) {
         { status: 400 }
       );
     }
+
     const userFiles = await db
-      .select()
+      .select({
+        id: files.id,
+        name: files.name,
+        type: files.type,
+        size: files.size,
+        url: files.url,
+        thumbnailUrl: files.thumbnailUrl,
+        folderId: files.folderId,
+        createdAt: files.createdAt,
+        isStarred: isNotNull(starredFiles.id), // boolean indicating starred status
+      })
       .from(files)
+      .leftJoin(
+        starredFiles,
+        and(
+          eq(files.id, starredFiles.originalFileId),
+          eq(starredFiles.userId, userId) // make sure the join is per-user
+        )
+      )
       .where(
         and(
           eq(files.userId, userId),
