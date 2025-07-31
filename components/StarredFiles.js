@@ -9,9 +9,10 @@ import { set } from "date-fns";
 const StarredFiles = ({ setImageUrl, setIsPreviewModalOpen, setRefresh }) => {
   const { user } = useUser();
   const [userStarredFiles, setUserStarredFiles] = useState([]);
-  const [starredFilesPath, setStarredFilesPath] = useState([
-    { folder: "Home", id: null },
-  ]);
+  const [ starredPageRefresh , setStarredPageRefresh] = useState(Date.now());
+  // const [starredFilesPath, setStarredFilesPath] = useState([
+  //   { folder: "Home", id: null },
+  // ]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -30,10 +31,10 @@ const StarredFiles = ({ setImageUrl, setIsPreviewModalOpen, setRefresh }) => {
       setLoading(false);
     };
     fetchStarredFiles();
-  }, []);
+  }, [starredPageRefresh]);
   return (
     <div>
-      <div className="border border-gray-700 h-[360px] rounded-lg p-3 flex flex-col">
+      <div className="border border-gray-700 h-[363px] rounded-lg p-3 flex flex-col">
         <div className="bg-[rgba(255,255,255,0.05)] h-[40px] rounded-md px-4 flex items-center font-semibold text-sm sticky top-0 z-10 backdrop-blur mb-2">
           <p className="w-[24%]">Name</p>
           <p className="w-[15%]">Type</p>
@@ -44,7 +45,7 @@ const StarredFiles = ({ setImageUrl, setIsPreviewModalOpen, setRefresh }) => {
 
         <div className="overflow-y-auto flex-1">
           {loading ? (
-            <p className="text-gray-400 text-lg text-center py-4">Loading...</p>
+            <p className="text-gray-400 text-lg text-center mt-[15%]">Loading...</p>
           ) : userStarredFiles?.length === 0 ? (
             <p className="text-gray-400 text-lg text-center mt-[15%]">
               No starred files.
@@ -57,7 +58,8 @@ const StarredFiles = ({ setImageUrl, setIsPreviewModalOpen, setRefresh }) => {
                 key={index}
                 file={element}
                 setIsPreviewModalOpen={setIsPreviewModalOpen}
-                currentPage={"allFiles"}
+                currentPage={"starred"}
+                setStarredPageRefresh={setStarredPageRefresh}
               />
             ))
           )}

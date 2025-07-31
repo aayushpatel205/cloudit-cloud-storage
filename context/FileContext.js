@@ -1,6 +1,5 @@
 "use client";
 import { createContext, useContext, useState } from "react";
-
 export const FileContext = createContext();
 
 export const FileContextProvider = ({ children }) => {

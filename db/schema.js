@@ -18,7 +18,6 @@ export const folders = pgTable("folders", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// files table
 export const files = pgTable("files", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 255 }),
@@ -31,23 +30,32 @@ export const files = pgTable("files", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// starred_files table (with file snapshot)
-export const starredFiles = pgTable(
-  "starred_files",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    originalFileId: uuid("original_file_id").notNull(), // links back to original file
-    userId: varchar("user_id", { length: 255 }).notNull(), // who starred it
+export const starredFiles = pgTable("starred_files", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  originalFileId: uuid("original_file_id").notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
 
-    // Snapshot of file metadata
-    name: varchar("name", { length: 255 }),
-    type: varchar("type", { length: 100 }),
-    size: bigint("size", { mode: "number" }),
-    url: text("url"),
-    thumbnailUrl: text("thumbnail_url"),
-    createdAt: timestamp("created_at").defaultNow(),
-  }
-);
+  name: varchar("name", { length: 255 }),
+  type: varchar("type", { length: 100 }),
+  size: bigint("size", { mode: "number" }),
+  url: text("url"),
+  thumbnailUrl: text("thumbnail_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const trashedItems = pgTable("trashed_items", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  originalFileId: uuid("original_item_id").notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
+
+  name: varchar("name", { length: 255 }),
+  type: varchar("type", { length: 100 }),
+  size: bigint("size", { mode: "number" }),
+  url: text("url"), 
+  thumbnailUrl: text("thumbnail_url"),
+  parentId: uuid("parent_id"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
 
 // Relations
 export const folderRelations = relations(folders, ({ many }) => ({
@@ -66,5 +74,18 @@ export const starredFileRelations = relations(starredFiles, ({ one }) => ({
   originalFile: one(files, {
     fields: [starredFiles.originalFileId],
     references: [files.id],
+  }),
+}));
+
+export const trashedItemRelations = relations(trashedItems, ({ one }) => ({
+  originalFile: one(files, {
+    fields: [trashedItems.originalItemId],
+    references: [files.id],
+    relationName: "trashedFile",
+  }),
+  originalFolder: one(folders, {
+    fields: [trashedItems.originalItemId],
+    references: [folders.id],
+    relationName: "trashedFolder",
   }),
 }));

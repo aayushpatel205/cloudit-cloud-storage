@@ -1,7 +1,7 @@
 import { db } from "@/db/index";
 import { NextResponse } from "next/server";
-import { folders } from "@/db/schema"; // assuming your folders schema is here
-import { eq, and, isNull } from "drizzle-orm";
+import { folders , trashedItems } from "@/db/schema"; // assuming your folders schema is here
+import { eq, and, isNull, notInArray } from "drizzle-orm";
 
 export async function POST(req) {
   try {
@@ -49,13 +49,19 @@ export async function GET(request) {
       );
     }
 
+    const trashedFolderIdsQuery = db
+      .select({ id: trashedItems.originalFileId })
+      .from(trashedItems)
+      .where(eq(trashedItems.type, "folder"));
+
     const userFolders = await db
       .select()
       .from(folders)
       .where(
         and(
           eq(folders.userId, userId),
-          parentId ? eq(folders.parentId, parentId) : isNull(folders.parentId)
+          parentId ? eq(folders.parentId, parentId) : isNull(folders.parentId),
+          notInArray(folders.id, trashedFolderIdsQuery)
         )
       );
     // console.log("folders", folders);

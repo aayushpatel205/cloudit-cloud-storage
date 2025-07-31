@@ -10,6 +10,7 @@ import { useFileContext } from "@/context/FileContext";
 import NameModal from "./NameModal";
 import AllFiles from "./AllFiles";
 import StarredFiles from "./StarredFiles";
+import TrashFiles from "./TrashFiles";
 
 const UserFiles = () => {
   const [active, setActive] = useState("allfiles");
@@ -29,10 +30,19 @@ const UserFiles = () => {
         setRefresh={setRefresh}
         setImageUrl={setImageUrl}
         setIsPreviewModalOpen={setIsPreviewModalOpen}
+        loading={loading}
       />
     ),
     starred: (
       <StarredFiles
+        setRefresh={setRefresh}
+        setImageUrl={setImageUrl}
+        setIsPreviewModalOpen={setIsPreviewModalOpen}
+      />
+    ),
+
+    trash: (
+      <TrashFiles
         setRefresh={setRefresh}
         setImageUrl={setImageUrl}
         setIsPreviewModalOpen={setIsPreviewModalOpen}
@@ -64,7 +74,7 @@ const UserFiles = () => {
       setLoading(false);
     };
     getFolders();
-  }, [user, refresh , active]);
+  }, [user, refresh, active]);
 
   return (
     <div className="h-[520px] border-1 border-gray-700 border-dashed rounded-xl flex flex-col w-[65%] px-5 py-5 gap-7">
@@ -94,7 +104,7 @@ const UserFiles = () => {
               : "text-gray-500"
           }`}
         >
-          <RiStarLine/>
+          <RiStarLine />
           <p>Starred</p>
         </div>
 

@@ -4,8 +4,6 @@ import axios from "axios";
 
 dotenv.config();
 
-console.log("Next public key: ", process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY);
-
 export const handleUpload = async (file, fileName, fileTag) => {
   try {
     const authRes = await axios.get(

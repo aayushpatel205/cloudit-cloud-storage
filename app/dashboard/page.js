@@ -11,16 +11,14 @@ import { useFileContext } from "@/context/FileContext";
 
 const Dashboard = () => {
   const fileInputRef = useRef(null);
+  const dropRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const { userFiles, setUserFiles, currentFolderPath, setCurrentFolderPath } =
     useFileContext();
   const { user } = useUser();
 
-  // const handleCreate = (name) => {
-  //   console.log("Name entered:", name);
-  //   // your folder/file creation logic here
-  // };
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -34,15 +32,12 @@ const Dashboard = () => {
 
     try {
       const options = {
-        maxSizeMB: 1, // Max size in MB
-        maxWidthOrHeight: 1024, // Optional resize
-        useWebWorker: true, // Better performance
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1024,
+        useWebWorker: true,
       };
 
       const compressedFile = await imageCompression(selectedFile, options);
-      console.log("Original size:", selectedFile.size / 1024, "KB");
-      console.log("Compressed size:", compressedFile.size / 1024, "KB");
-
       const formData = new FormData();
       formData.append("selectedFile", compressedFile);
       formData.append("fileName", compressedFile.name);
@@ -63,6 +58,30 @@ const Dashboard = () => {
 
   const handleBrowseClick = () => {
     fileInputRef.current.click();
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith("image/")) {
+      setSelectedFile(file);
+      console.log("Dropped file:", file);
+    }
   };
 
   return (
@@ -90,9 +109,15 @@ const Dashboard = () => {
           </div>
 
           <div
-            className={`flex justify-center items-center w-[100%] h-[170px] ${
-              !selectedFile ? "border-1 border-gray-700 border-dashed " : ""
-            } mt-5 rounded-lg`}
+            ref={dropRef}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`flex justify-center items-center w-full h-[170px] mt-5 rounded-lg transition ${
+              isDragging
+                ? "border-2 border-darkblue-500 bg-gray-500/10"
+                : "border-1 border-gray-700 border-dashed"
+            }`}
           >
             <div className="flex flex-col gap-2 items-center justify-center w-full h-full">
               {!selectedFile ? (
@@ -119,13 +144,11 @@ const Dashboard = () => {
                   />
                 </>
               ) : (
-                <>
-                  <img
-                    src={URL.createObjectURL(selectedFile)}
-                    alt="Selected"
-                    className="w-full h-full object-cover rounded-lg"
-                  />
-                </>
+                <img
+                  src={URL.createObjectURL(selectedFile)}
+                  alt="Selected"
+                  className="w-full h-full object-cover rounded-lg"
+                />
               )}
             </div>
           </div>
@@ -133,9 +156,7 @@ const Dashboard = () => {
           {selectedFile && (
             <div className="flex gap-3 mt-3">
               <button
-                onClick={async () => {
-                  await uploadFile();
-                }}
+                onClick={uploadFile}
                 className="bg-darkblue-500 px-4 py-2 rounded-full text-white font-semibold text-xs cursor-pointer transition"
               >
                 Upload
@@ -161,13 +182,14 @@ const Dashboard = () => {
 
         <UserFiles />
       </div>
+
       <NameModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         parentId={null}
-        // onConfirm={handleCreate}
       />
     </ProtectedRoute>
   );
 };
+
 export default Dashboard;

@@ -4,10 +4,15 @@ import FolderDisplayComponent from "@/components/FolderDisplayComponent";
 import FileDisplayComponent from "@/components/FileDisplayComponent";
 import { FiRefreshCw } from "react-icons/fi";
 
-const AllFiles = ({setActive , setRefresh , setImageUrl , setIsPreviewModalOpen }) => {
-  const { userFiles, setUserFiles, currentFolderPath, setCurrentFolderPath } =
+const AllFiles = ({
+  setActive,
+  setRefresh,
+  setImageUrl,
+  setIsPreviewModalOpen,
+  loading,
+}) => {
+  const { userFiles, currentFolderPath, setCurrentFolderPath } =
     useFileContext();
-  const [loading, setLoading] = useState(false);
   return (
     <div className="flex flex-col gap-7">
       <div className="flex gap-2">
@@ -52,31 +57,10 @@ const AllFiles = ({setActive , setRefresh , setImageUrl , setIsPreviewModalOpen 
 
         <div className="flex h-[68%] flex-col mt-3 gap-2 overflow-y-scroll">
           {loading ? (
-            <p className="text-gray-400 text-center text-lg mt-auto mb-auto">
+            <p className="text-gray-400 text-center text-lg m-auto">
               Loading...
             </p>
-          ) : userFiles?.length > 0 ? (
-            userFiles.map((file, index) =>
-              file?.type === "image/png" ? (
-                <>
-                  <FileDisplayComponent
-                    setRefresh={setRefresh}
-                    setImageUrl={setImageUrl}
-                    key={index}
-                    file={file}
-                    setIsPreviewModalOpen={setIsPreviewModalOpen}
-                    currentPage={"allFiles"}
-                  />
-                </>
-              ) : (
-                <FolderDisplayComponent
-                  key={index}
-                  file={file}
-                  setActive={setActive}
-                />
-              )
-            )
-          ) : (
+          ) : userFiles?.length === 0 ? (
             <div className="flex flex-col items-center">
               <p className="text-gray-400 text-md text-center py-4 mt-4">
                 No files or folders found.
@@ -88,6 +72,26 @@ const AllFiles = ({setActive , setRefresh , setImageUrl , setIsPreviewModalOpen 
                 Create Folder
               </button>
             </div>
+          ) : (
+            userFiles?.map((file, index) =>
+              file?.type === "image/png" ? (
+                <FileDisplayComponent
+                  setRefresh={setRefresh}
+                  setImageUrl={setImageUrl}
+                  key={index}
+                  file={file}
+                  setIsPreviewModalOpen={setIsPreviewModalOpen}
+                  currentPage={"allFiles"}
+                />
+              ) : (
+                <FolderDisplayComponent
+                  setRefresh={setRefresh}
+                  key={index}
+                  file={file}
+                  setActive={setActive}
+                />
+              )
+            )
           )}
         </div>
       </div>
