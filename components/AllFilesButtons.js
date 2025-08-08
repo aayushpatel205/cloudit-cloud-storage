@@ -2,12 +2,12 @@ import React from "react";
 import { MdDeleteOutline } from "react-icons/md";
 import { RiStarLine, RiStarOffLine } from "react-icons/ri";
 import { IoIosCloudDownload } from "react-icons/io";
+import { downloadImage } from "@/service/ImageDownload";
 import axios from "axios";
 import { useUser } from "@clerk/nextjs";
 
 const AllFilesButtons = ({ file, setRefresh }) => {
   const { user } = useUser();
-  console.log("files here in all files: ", file);
 
   const deleteFile = async () => {
     try {
@@ -28,7 +28,6 @@ const AllFilesButtons = ({ file, setRefresh }) => {
         onClick={() => {
           try {
             downloadImage(file.url, file.name);
-            notify();
           } catch (error) {
             console.log(error);
           }

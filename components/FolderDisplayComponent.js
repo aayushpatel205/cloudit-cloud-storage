@@ -9,38 +9,66 @@ import { MdOutlineRestore } from "react-icons/md";
 import { RiStarLine, RiStarOffLine } from "react-icons/ri";
 import axios from "axios";
 import { useUser } from "@clerk/nextjs";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 
 const FolderDisplayComponent = ({
   file,
   currentPage,
-  setUserStarredFiles,
   setRefresh,
+  setTrashPageRefresh,
 }) => {
   const { setUserFiles, currentFolderPath, setCurrentFolderPath } =
     useFileContext();
 
   const [loading, setLoading] = useState(false);
+  const [isDraggedOver, setIsDraggedOver] = useState(false);
   const { user } = useUser();
   const relativeTime = formatDistanceToNow(new Date(file.createdAt), {
     addSuffix: true,
   });
 
+  const getAllContentsRecursively = async (
+    folderId,
+    accumulated = [],
+    basePath = ""
+  ) => {
+    const foldersRes = await axios.get("/api/folders", {
+      params: { userId: user?.id, parentId: folderId },
+    });
+
+    const filesRes = await axios.get("/api/files", {
+      params: { userId: user?.id, parentId: folderId },
+    });
+
+    const folders = foldersRes.data.userFolders;
+    const files = filesRes.data.userFiles;
+
+    for (let file of files) {
+      accumulated.push({
+        ...file,
+        type: "file",
+        path: `${basePath}${file.name}`,
+      });
+    }
+
+    for (let folder of folders) {
+      const folderPath = `${basePath}${folder.name}/`;
+
+      accumulated.push({
+        ...folder,
+        type: "folder",
+        path: folderPath,
+      });
+
+      await getAllContentsRecursively(folder.id, accumulated, folderPath);
+    }
+
+    return accumulated;
+  };
+
   const getFolders = async () => {
     setLoading(true);
-    let id = file.id;
-    const response = await axios.get("/api/folders", {
-      params: {
-        userId: user?.id,
-        parentId: id,
-      },
-    });
-    const response2 = await axios.get("/api/files", {
-      params: {
-        userId: user?.id,
-        parentId: id,
-      },
-    });
-    setUserFiles([...response2?.data.userFiles, ...response?.data.userFolders]);
     setCurrentFolderPath([
       ...currentFolderPath,
       { folder: file.name, id: file.id },
@@ -49,7 +77,49 @@ const FolderDisplayComponent = ({
     setLoading(false);
   };
   return (
-    <div className="flex items-center h-10">
+    <div
+      onDragOver={(e) => {
+        e.preventDefault();
+        setIsDraggedOver(true);
+      }}
+      onDragLeave={() => setIsDraggedOver(false)}
+      onDrop={async (e) => {
+        e.preventDefault();
+        setIsDraggedOver(false);
+
+        const files = e.dataTransfer.files;
+        if (files.length === 0) return;
+
+        const imageFile = files[0];
+
+        if (!imageFile.type.startsWith("image/")) {
+          console.warn("Only image files are supported");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("selectedFile", imageFile);
+        formData.append("fileName", imageFile.name);
+        formData.append("fileType", imageFile.type);
+        formData.append("fileSize", imageFile.size);
+        formData.append("userId", user.id);
+        formData.append("folderId", file.id);
+
+        try {
+          await axios.post("/api/files", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          });
+          setRefresh(Date.now());
+        } catch (error) {
+          console.error("Error uploading dropped file", error);
+        }
+      }}
+      className={`flex items-center h-10 transition-all duration-150 ${
+        isDraggedOver ? "bg-blue-100 border border-blue-400 rounded-md" : ""
+      }`}
+    >
       <div
         onDoubleClick={() => {
           if (currentPage !== "trash") {
@@ -73,31 +143,126 @@ const FolderDisplayComponent = ({
       </div>
       <div className="w-[28%] py-2 flex gap-2 items-center">
         {currentPage === "trash" ? (
-          <button className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex items-center gap-2 cursor-pointer">
+          <button
+            onClick={async () => {
+              try {
+                const response2 = await axios.delete(`/api/trash`, {
+                  params: {
+                    userId: user.id,
+                    fileId: file.id,
+                  },
+                });
+                const response = await axios.post("/api/folders", {
+                  userId: user.id,
+                  parentId: null,
+                  folderName: file.name,
+                  originalFileId: file.originalFileId,
+                });
+                setTrashPageRefresh(Date.now());
+              } catch (error) {
+                console.error("Error restoring folder:", error);
+              }
+            }}
+            className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex items-center gap-2 cursor-pointer"
+          >
             <MdOutlineRestore size={17} />
             <p>Restore</p>
           </button>
         ) : (
-          <button className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex items-center gap-2 cursor-pointer w-[55%]">
+          <button
+            onClick={async () => {
+              const allContents = await getAllContentsRecursively(file.id);
+              const zip = new JSZip();
+              const root = zip.folder(file.name);
+
+              for (const item of allContents) {
+                const relativePath = item.path;
+
+                if (item.type === "folder") {
+                  root.folder(relativePath);
+                } else if (item.type === "file" && item.url) {
+                  try {
+                    const res = await fetch(item.url);
+                    const blob = await res.blob();
+                    root.file(relativePath, blob);
+                  } catch (err) {
+                    console.error("Failed to fetch file:", item.name, err);
+                  }
+                }
+              }
+              const blob = await zip.generateAsync({ type: "blob" });
+              saveAs(blob, `${file.name}.zip`);
+            }}
+            className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex items-center gap-2 cursor-pointer w-[55%]"
+          >
             <IoIosCloudDownload size={12} />
             <p>Download</p>
           </button>
         )}
         <button
           onClick={async () => {
-            console.log("The deleted folder details: ", file);
-            const formData = new FormData();
-            formData.append("originalFileId", file.id);
-            formData.append("fileName", file.name);
-            formData.append("fileType", "folder");
-            formData.append("fileSize", 0);
-            formData.append("fileUrl", null);
-            formData.append("userId", user.id);
-            formData.append("folderId", file.parentId);
+            if (currentPage === "trash") {
+              const allContents = await getAllContentsRecursively(
+                file.originalFileId
+              );
+              const fileIds = allContents
+                .filter((item) => item.type === "file")
+                .map((item) => item.id);
 
-            await axios.post("/api/trash", formData, {
-              headers: { "Content-Type": "multipart/form-data" },
-            });
+              const folderIds = allContents
+                .filter((item) => item.type === "folder")
+                .map((item) => item.id);
+
+              console.log("fileIds: ", fileIds);
+              console.log("folderIds: ", folderIds);
+
+              if (fileIds.length === 0 && folderIds.length === 0) {
+                const response2 = await axios.delete(`/api/trash`, {
+                  params: {
+                    userId: user.id,
+                    fileId: file.id,
+                  },
+                });
+              } else {
+                const response = await axios.post(
+                  "/api/trash/permanent-delete",
+                  {
+                    userId: user.id,
+                    fileIds,
+                    folderIds,
+                  }
+                );
+                const response2 = await axios.delete(`/api/trash`, {
+                  params: {
+                    userId: user.id,
+                    fileId: file.id,
+                  },
+                });
+              }
+
+              setTrashPageRefresh(Date.now());
+            } else {
+              console.log("The deleted folder details: ", file);
+              const formData = new FormData();
+              formData.append("originalFileId", file.id);
+              formData.append("fileName", file.name);
+              formData.append("fileType", "folder");
+              formData.append("fileSize", 0);
+              formData.append("fileUrl", null);
+              formData.append("userId", user.id);
+              formData.append("folderId", file.parentId);
+
+              await axios.post("/api/trash", formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+              });
+
+              await axios.delete(`/api/folders`, {
+                params: {
+                  userId: user.id,
+                  folderId: file.id,
+                },
+              });
+            }
             setRefresh(Date.now());
           }}
           className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex items-center gap-2 cursor-pointer"

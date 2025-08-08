@@ -10,6 +10,7 @@ const AllFiles = ({
   setImageUrl,
   setIsPreviewModalOpen,
   loading,
+  setIsModalOpen,
 }) => {
   const { userFiles, currentFolderPath, setCurrentFolderPath } =
     useFileContext();
@@ -55,6 +56,13 @@ const AllFiles = ({
           <p className="w-[26%]">Actions</p>
         </div>
 
+        {/* <button
+          onClick={() => setIsModalOpen(true)}
+          className="w-[20%] mt-5 mr-auto cursor-pointer bg-darkblue-500 px-3 py-1 rounded-md text-sm font-semibold"
+        >
+          Create Folder
+        </button> */}
+
         <div className="flex h-[68%] flex-col mt-3 gap-2 overflow-y-scroll">
           {loading ? (
             <p className="text-gray-400 text-center text-lg m-auto">
@@ -74,7 +82,7 @@ const AllFiles = ({
             </div>
           ) : (
             userFiles?.map((file, index) =>
-              file?.type === "image/png" ? (
+              file?.type?.startsWith("image/") ? (
                 <FileDisplayComponent
                   setRefresh={setRefresh}
                   setImageUrl={setImageUrl}

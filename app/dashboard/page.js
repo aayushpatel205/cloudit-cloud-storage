@@ -80,13 +80,12 @@ const Dashboard = () => {
     const file = e.dataTransfer.files[0];
     if (file && file.type.startsWith("image/")) {
       setSelectedFile(file);
-      console.log("Dropped file:", file);
     }
   };
 
   return (
     <ProtectedRoute>
-      <div className="mt-5 min-h-screen px-20 flex gap-12 items-center justify-center">
+      <div className="h-screen px-20 flex gap-12 items-center justify-center overflow-hidden">
         <div className="rounded-xl flex flex-col border-1 border-gray-700 border-dashed min-h-[500px] w-[25%] px-5 py-5 gap-5 mt-5">
           <div className="flex gap-2 items-center">
             <MdOutlineUploadFile className="text-darkblue-500" size={35} />
@@ -175,7 +174,7 @@ const Dashboard = () => {
             <ul className="gap-2 flex flex-col">
               <li className="text-sm">Use a unique folder name</li>
               <li className="text-sm">Images are private</li>
-              <li className="text-sm">Maximum file size: 5MB</li>
+              <li className="text-sm">Maximum file size: 2MB</li>
             </ul>
           </div>
         </div>

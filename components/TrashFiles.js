@@ -43,9 +43,9 @@ const TrashFiles = ({ setRefresh, setImageUrl, setIsPreviewModalOpen }) => {
         </div>
 
         {/* File List */}
-        <div className="flex h-[90%] flex-col mt-3 gap-2 overflow-y-scroll">
+        <div className="flex h-[90%] flex-col mt-1 overflow-y-scroll">
           {loading ? (
-            <p className="text-gray-400 text-lg text-center py-4">Loading...</p>
+            <p className="text-gray-400 text-lg text-center py-4 mt-[15%]">Loading...</p>
           ) : trashFiles?.length === 0 ? (
             <p className="text-gray-400 text-lg text-center mt-[15%]">
               No files here...
@@ -67,6 +67,7 @@ const TrashFiles = ({ setRefresh, setImageUrl, setIsPreviewModalOpen }) => {
                   file={element}
                   key={index}
                   currentPage={"trash"}
+                  setTrashPageRefresh={setTrashPageRefresh}
                   setRefresh={setRefresh}
                 />
               )

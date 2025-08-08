@@ -92,12 +92,7 @@ export async function DELETE(request) {
 
     const result = await db
       .delete(trashedItems)
-      .where(
-        and(
-          eq(trashedItems.id, fileId),
-          eq(trashedItems.userId, userId)
-        )
-      )
+      .where(and(eq(trashedItems.id, fileId), eq(trashedItems.userId, userId)))
       .returning();
 
     return NextResponse.json(

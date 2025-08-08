@@ -1,11 +1,11 @@
 import { db } from "@/db/index";
 import { NextResponse } from "next/server";
-import { folders , trashedItems } from "@/db/schema"; // assuming your folders schema is here
+import { folders, trashedItems } from "@/db/schema"; // assuming your folders schema is here
 import { eq, and, isNull, notInArray } from "drizzle-orm";
 
 export async function POST(req) {
   try {
-    const { folderName, userId, parentId } = await req.json();
+    const { folderName, userId, parentId, originalFileId } = await req.json();
 
     if (!folderName || !userId) {
       return NextResponse.json(
@@ -14,17 +14,29 @@ export async function POST(req) {
       );
     }
 
-    const result = await db
-      .insert(folders)
-      .values({
-        name: folderName,
-        userId,
-        parentId: parentId || null,
-      })
-      .returning();
+    if (originalFileId) {
+      const result = await db
+        .insert(folders)
+        .values({
+          id: originalFileId,
+          name: folderName,
+          userId,
+          parentId: parentId || null,
+        })
+        .returning();
+    } else {
+      const result = await db
+        .insert(folders)
+        .values({
+          name: folderName,
+          userId,
+          parentId: parentId || null,
+        })
+        .returning();
+    }
 
     return NextResponse.json(
-      { message: "Folder created successfully", folder: result[0] },
+      { message: "Folder created successfully" },
       { status: 201 }
     );
   } catch (error) {
@@ -69,6 +81,37 @@ export async function GET(request) {
     return NextResponse.json({ userFolders }, { status: 200 });
   } catch (error) {
     console.error("Error fetching folders:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get("userId");
+    const folderId = searchParams.get("folderId");
+
+    if (!userId || !folderId) {
+      return NextResponse.json(
+        { error: "userId and folderId are required" },
+        { status: 400 }
+      );
+    }
+
+    const result = await db
+      .delete(folders)
+      .where(and(eq(folders.id, folderId), eq(folders.userId, userId)))
+      .returning();
+
+    return NextResponse.json(
+      { message: "Folder deleted successfully", result },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error deleting folder:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

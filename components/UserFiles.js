@@ -31,6 +31,7 @@ const UserFiles = () => {
         setImageUrl={setImageUrl}
         setIsPreviewModalOpen={setIsPreviewModalOpen}
         loading={loading}
+        setIsModalOpen={setIsModalOpen}
       />
     ),
     starred: (
@@ -74,10 +75,10 @@ const UserFiles = () => {
       setLoading(false);
     };
     getFolders();
-  }, [user, refresh, active]);
+  }, [refresh, active, currentFolderPath]);
 
   return (
-    <div className="h-[520px] border-1 border-gray-700 border-dashed rounded-xl flex flex-col w-[65%] px-5 py-5 gap-7">
+    <div className="mt-10 h-[520px] border-1 border-gray-700 border-dashed rounded-xl flex flex-col w-[65%] px-5 py-5 gap-7">
       <div className="flex gap-3 items-center">
         <FaRegFileAlt className=" text-darkblue-500" size={30} />
         <p className="text-2xl font-semibold">Your Files</p>
