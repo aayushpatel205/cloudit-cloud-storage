@@ -2,9 +2,8 @@ import React from "react";
 import { MdDeleteOutline, MdOutlineRestore } from "react-icons/md";
 import axios from "axios";
 import { useUser } from "@clerk/nextjs";
-import { set } from "date-fns";
 import { toast } from "react-toastify";
-const TrashPageButtons = ({ file, setRefresh, setTrashPageRefresh }) => {
+const TrashPageButtons = ({ file, setTrashPageRefresh }) => {
   const { user } = useUser();
   return (
     <div className="flex gap-2">

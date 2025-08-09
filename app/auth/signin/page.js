@@ -27,7 +27,6 @@ const SignIn = () => {
 
       await setActive({ session: result.createdSessionId });
       router.push("/");
-      // Redirect after signin
     } catch (err) {
       console.error("Error signing in: ", err.errors);
     }
@@ -83,7 +82,7 @@ const SignIn = () => {
         </div>
 
         <span className="text-center">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link href="/auth/signup">
             <span className="text-darkblue-500 cursor-pointer font-semibold">
               Sign Up
