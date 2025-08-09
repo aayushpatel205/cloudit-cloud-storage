@@ -5,6 +5,7 @@ import { IoIosCloudDownload } from "react-icons/io";
 import { downloadImage } from "@/service/ImageDownload";
 import axios from "axios";
 import { useUser } from "@clerk/nextjs";
+import { toast } from "react-toastify";
 
 const AllFilesButtons = ({ file, setRefresh }) => {
   const { user } = useUser();
@@ -50,8 +51,9 @@ const AllFilesButtons = ({ file, setRefresh }) => {
                   },
                 });
                 setRefresh(Date.now());
+                toast.success("Removed from starred");
               } catch (error) {
-                console.log(error);
+                toast.error(error.response.data.message);
               }
             }}
             className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex items-center gap-2 cursor-pointer w-[55%]"
@@ -74,6 +76,7 @@ const AllFilesButtons = ({ file, setRefresh }) => {
                 headers: { "Content-Type": "multipart/form-data" },
               });
               setRefresh(Date.now());
+              toast.success("Added to starred");
             }}
             className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex justify-center items-center gap-2 cursor-pointer"
           >

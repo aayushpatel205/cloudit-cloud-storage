@@ -2,9 +2,6 @@
 import React from "react";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
-import { useUser } from "@clerk/nextjs";
-import { downloadImage } from "@/service/ImageDownload";
-import toast, { Toaster } from "react-hot-toast";
 import StarredPageButtons from "./StarredPageButtons";
 import TrashPageButtons from "./TrashPageButtons";
 import AllFilesButtons from "./AllFilesButtons";
@@ -21,7 +18,6 @@ const FileDisplayComponent = ({
   const relativeTime = formatDistanceToNow(new Date(file.createdAt), {
     addSuffix: true,
   });
-  const { user } = useUser();
 
   const formatFileSize = (bytes) => {
     if (bytes < 1024) return bytes + " B";

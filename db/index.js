@@ -18,11 +18,11 @@ export const createFolder = async (name, userId, parentId) => {
       .values({
         name,
         userId,
-        parentId: parentId || null, // null for root folders
+        parentId: parentId || null
       })
       .returning();
 
-    return result[0]; // returning the created folder's details
+    return result[0];
   } catch (error) {
     console.error("Error creating folder:", error);
     throw error;

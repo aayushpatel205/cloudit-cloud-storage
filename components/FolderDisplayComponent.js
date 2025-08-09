@@ -1,16 +1,16 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { FaFolder } from "react-icons/fa";
 import { MdDeleteOutline } from "react-icons/md";
 import { formatDistanceToNow } from "date-fns";
 import { useFileContext } from "@/context/FileContext";
 import { IoIosCloudDownload } from "react-icons/io";
 import { MdOutlineRestore } from "react-icons/md";
-import { RiStarLine, RiStarOffLine } from "react-icons/ri";
 import axios from "axios";
 import { useUser } from "@clerk/nextjs";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import { toast } from "react-toastify";
 
 const FolderDisplayComponent = ({
   file,
@@ -158,9 +158,10 @@ const FolderDisplayComponent = ({
                   folderName: file.name,
                   originalFileId: file.originalFileId,
                 });
+                toast.success("Folder restored successfully");
                 setTrashPageRefresh(Date.now());
               } catch (error) {
-                console.error("Error restoring folder:", error);
+                toast.error("Folder restore failed");
               }
             }}
             className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex items-center gap-2 cursor-pointer"
@@ -171,27 +172,32 @@ const FolderDisplayComponent = ({
         ) : (
           <button
             onClick={async () => {
-              const allContents = await getAllContentsRecursively(file.id);
-              const zip = new JSZip();
-              const root = zip.folder(file.name);
+              try {
+                const allContents = await getAllContentsRecursively(file.id);
+                const zip = new JSZip();
+                const root = zip.folder(file.name);
 
-              for (const item of allContents) {
-                const relativePath = item.path;
+                for (const item of allContents) {
+                  const relativePath = item.path;
 
-                if (item.type === "folder") {
-                  root.folder(relativePath);
-                } else if (item.type === "file" && item.url) {
-                  try {
-                    const res = await fetch(item.url);
-                    const blob = await res.blob();
-                    root.file(relativePath, blob);
-                  } catch (err) {
-                    console.error("Failed to fetch file:", item.name, err);
+                  if (item.type === "folder") {
+                    root.folder(relativePath);
+                  } else if (item.type === "file" && item.url) {
+                    try {
+                      const res = await fetch(item.url);
+                      const blob = await res.blob();
+                      root.file(relativePath, blob);
+                    } catch (err) {
+                      toast.error("File download failed");
+                    }
                   }
                 }
+                const blob = await zip.generateAsync({ type: "blob" });
+                saveAs(blob, `${file.name}.zip`);
+                toast.success("File downloaded successfully");
+              } catch (error) {
+                toast.error("File download failed");
               }
-              const blob = await zip.generateAsync({ type: "blob" });
-              saveAs(blob, `${file.name}.zip`);
             }}
             className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex items-center gap-2 cursor-pointer w-[55%]"
           >
@@ -201,69 +207,74 @@ const FolderDisplayComponent = ({
         )}
         <button
           onClick={async () => {
-            if (currentPage === "trash") {
-              const allContents = await getAllContentsRecursively(
-                file.originalFileId
-              );
-              const fileIds = allContents
-                .filter((item) => item.type === "file")
-                .map((item) => item.id);
-
-              const folderIds = allContents
-                .filter((item) => item.type === "folder")
-                .map((item) => item.id);
-
-              console.log("fileIds: ", fileIds);
-              console.log("folderIds: ", folderIds);
-
-              if (fileIds.length === 0 && folderIds.length === 0) {
-                const response2 = await axios.delete(`/api/trash`, {
-                  params: {
-                    userId: user.id,
-                    fileId: file.id,
-                  },
-                });
-              } else {
-                const response = await axios.post(
-                  "/api/trash/permanent-delete",
-                  {
-                    userId: user.id,
-                    fileIds,
-                    folderIds,
-                  }
+            try {
+              if (currentPage === "trash") {
+                const allContents = await getAllContentsRecursively(
+                  file.originalFileId
                 );
-                const response2 = await axios.delete(`/api/trash`, {
+                const fileIds = allContents
+                  .filter((item) => item.type === "file")
+                  .map((item) => item.id);
+
+                const folderIds = allContents
+                  .filter((item) => item.type === "folder")
+                  .map((item) => item.id);
+
+                console.log("fileIds: ", fileIds);
+                console.log("folderIds: ", folderIds);
+
+                if (fileIds.length === 0 && folderIds.length === 0) {
+                  const response2 = await axios.delete(`/api/trash`, {
+                    params: {
+                      userId: user.id,
+                      fileId: file.id,
+                    },
+                  });
+                } else {
+                  const response = await axios.post(
+                    "/api/trash/permanent-delete",
+                    {
+                      userId: user.id,
+                      fileIds,
+                      folderIds,
+                    }
+                  );
+                  const response2 = await axios.delete(`/api/trash`, {
+                    params: {
+                      userId: user.id,
+                      fileId: file.id,
+                    },
+                  });
+                }
+                toast.success("Folder deleted permanently");
+                setTrashPageRefresh(Date.now());
+              } else {
+                console.log("The deleted folder details: ", file);
+                const formData = new FormData();
+                formData.append("originalFileId", file.id);
+                formData.append("fileName", file.name);
+                formData.append("fileType", "folder");
+                formData.append("fileSize", 0);
+                formData.append("fileUrl", null);
+                formData.append("userId", user.id);
+                formData.append("folderId", file.parentId);
+
+                await axios.post("/api/trash", formData, {
+                  headers: { "Content-Type": "multipart/form-data" },
+                });
+
+                await axios.delete(`/api/folders`, {
                   params: {
                     userId: user.id,
-                    fileId: file.id,
+                    folderId: file.id,
                   },
                 });
               }
-
-              setTrashPageRefresh(Date.now());
-            } else {
-              console.log("The deleted folder details: ", file);
-              const formData = new FormData();
-              formData.append("originalFileId", file.id);
-              formData.append("fileName", file.name);
-              formData.append("fileType", "folder");
-              formData.append("fileSize", 0);
-              formData.append("fileUrl", null);
-              formData.append("userId", user.id);
-              formData.append("folderId", file.parentId);
-
-              await axios.post("/api/trash", formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-              });
-
-              await axios.delete(`/api/folders`, {
-                params: {
-                  userId: user.id,
-                  folderId: file.id,
-                },
-              });
+              setRefresh(Date.now());
+              toast.success("Folder deleted successfully");
+            } catch (error) {
+              toast.error("Folder delete failed");
             }
-            setRefresh(Date.now());
           }}
           className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex items-center gap-2 cursor-pointer"
         >

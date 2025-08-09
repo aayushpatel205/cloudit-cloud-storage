@@ -5,6 +5,7 @@ import { FaFolderPlus } from "react-icons/fa";
 import { IoMdArrowForward } from "react-icons/io";
 import { useUser } from "@clerk/nextjs";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const NameModal = ({ isOpen, onClose, parentId }) => {
   const [folderName, setFolderName] = useState("");
@@ -22,14 +23,11 @@ const NameModal = ({ isOpen, onClose, parentId }) => {
           userId: user.id,
           parentId,
         });
-        console.log("Uploaded folder details:", response.data);
+        toast.success("Folder created successfully");
         setFolderName("");
       } catch (error) {
-        console.error("Error creating folder:", error);
+        toast.error("Folder creation failed");
       }
-
-      // const data = await createFolder(folderName, user.id, parentId);
-      // console.log('data', data);
     };
     uploadFolder();
     onClose();

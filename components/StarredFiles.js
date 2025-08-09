@@ -1,18 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { useFileContext } from "@/context/FileContext";
 import { useUser } from "@clerk/nextjs";
 import axios from "axios";
 import FileDisplayComponent from "./FileDisplayComponent";
-import FolderDisplayComponent from "./FolderDisplayComponent";
-import { set } from "date-fns";
+import { toast } from "react-toastify";
 
 const StarredFiles = ({ setImageUrl, setIsPreviewModalOpen, setRefresh }) => {
   const { user } = useUser();
   const [userStarredFiles, setUserStarredFiles] = useState([]);
   const [ starredPageRefresh , setStarredPageRefresh] = useState(Date.now());
-  // const [starredFilesPath, setStarredFilesPath] = useState([
-  //   { folder: "Home", id: null },
-  // ]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -26,7 +21,7 @@ const StarredFiles = ({ setImageUrl, setIsPreviewModalOpen, setRefresh }) => {
         });
         setUserStarredFiles(response?.data.userStarredFiles);
       } catch (error) {
-        console.error("Error fetching starred files:", error);
+        toast.error("Failed to fetch starred files");
       }
       setLoading(false);
     };

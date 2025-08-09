@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useFileContext } from "@/context/FileContext";
 import FolderDisplayComponent from "@/components/FolderDisplayComponent";
 import FileDisplayComponent from "@/components/FileDisplayComponent";
@@ -55,13 +55,6 @@ const AllFiles = ({
           <p className="w-[21%]">Added</p>
           <p className="w-[26%]">Actions</p>
         </div>
-
-        {/* <button
-          onClick={() => setIsModalOpen(true)}
-          className="w-[20%] mt-5 mr-auto cursor-pointer bg-darkblue-500 px-3 py-1 rounded-md text-sm font-semibold"
-        >
-          Create Folder
-        </button> */}
 
         <div className="flex h-[68%] flex-col mt-3 gap-2 overflow-y-scroll">
           {loading ? (

@@ -3,7 +3,7 @@ import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { FaRegFileAlt, FaRegFile } from "react-icons/fa";
 import { RiStarLine } from "react-icons/ri";
-import { FiTrash, FiRefreshCw } from "react-icons/fi";
+import { FiTrash } from "react-icons/fi";
 import ImagePreviewModal from "@/components/ImagePreviewModal";
 import { useUser } from "@clerk/nextjs";
 import { useFileContext } from "@/context/FileContext";
@@ -11,6 +11,7 @@ import NameModal from "./NameModal";
 import AllFiles from "./AllFiles";
 import StarredFiles from "./StarredFiles";
 import TrashFiles from "./TrashFiles";
+import { toast } from "react-toastify";
 
 const UserFiles = () => {
   const [active, setActive] = useState("allfiles");
@@ -18,7 +19,7 @@ const UserFiles = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { userFiles, setUserFiles, currentFolderPath, setCurrentFolderPath } =
+  const { setUserFiles, currentFolderPath } =
     useFileContext();
   const [refresh, setRefresh] = useState(Date.now());
   const { user } = useUser();
@@ -53,26 +54,30 @@ const UserFiles = () => {
 
   useEffect(() => {
     const getFolders = async () => {
-      const lastRoute = currentFolderPath[currentFolderPath.length - 1];
-      setLoading(true);
-      const response = await axios.get("/api/folders", {
-        params: {
-          userId: user?.id,
-          parentId: lastRoute?.id,
-        },
-      });
-      const response2 = await axios.get("/api/files", {
-        params: {
-          userId: user?.id,
-          parentId: lastRoute?.id,
-        },
-      });
-      console.log("response2 for files: ", response2.data.userFiles);
-      setUserFiles([
-        ...response2?.data.userFiles,
-        ...response?.data.userFolders,
-      ]);
-      setLoading(false);
+      try {
+        const lastRoute = currentFolderPath[currentFolderPath.length - 1];
+        setLoading(true);
+        const response = await axios.get("/api/folders", {
+          params: {
+            userId: user?.id,
+            parentId: lastRoute?.id,
+          },
+        });
+        const response2 = await axios.get("/api/files", {
+          params: {
+            userId: user?.id,
+            parentId: lastRoute?.id,
+          },
+        });
+        setUserFiles([
+          ...response2?.data.userFiles,
+          ...response?.data.userFolders,
+        ]);
+        setLoading(false);
+      } catch (error) {
+        toast.error("Failed to fetch files");
+        setLoading(false);
+      }
     };
     getFolders();
   }, [refresh, active, currentFolderPath]);
@@ -132,7 +137,6 @@ const UserFiles = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         parentId={currentFolderPath[currentFolderPath.length - 1]?.id}
-        // onConfirm={handleCreate}
       />
     </div>
   );

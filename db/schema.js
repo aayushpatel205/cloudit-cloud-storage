@@ -4,8 +4,7 @@ import {
   varchar,
   text,
   timestamp,
-  bigint,
-  unique,
+  bigint
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -54,7 +53,7 @@ export const trashedItems = pgTable("trashed_items", {
   url: text("url"), 
   thumbnailUrl: text("thumbnail_url"),
   parentId: uuid("parent_id"),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 // Relations

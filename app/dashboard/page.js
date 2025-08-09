@@ -1,13 +1,13 @@
 "use client";
 import axios from "axios";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { MdOutlineUploadFile } from "react-icons/md";
 import NameModal from "@/components/NameModal";
 import { useUser } from "@clerk/nextjs";
 import imageCompression from "browser-image-compression";
 import UserFiles from "@/components/UserFiles";
-import { useFileContext } from "@/context/FileContext";
+import { toast } from "react-toastify";
 
 const Dashboard = () => {
   const fileInputRef = useRef(null);
@@ -15,15 +15,12 @@ const Dashboard = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const { userFiles, setUserFiles, currentFolderPath, setCurrentFolderPath } =
-    useFileContext();
   const { user } = useUser();
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
       setSelectedFile(file);
-      console.log("Selected file:", file);
     }
   };
 
@@ -49,10 +46,10 @@ const Dashboard = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      console.log("File uploaded successfully:", response.data);
+      toast.success("File uploaded successfully");
       setSelectedFile(null);
     } catch (error) {
-      console.error("Error uploading file:", error);
+      toast.error("File upload failed");
     }
   };
 
@@ -161,6 +158,7 @@ const Dashboard = () => {
                 Upload
               </button>
               <button
+                
                 onClick={() => setSelectedFile(null)}
                 className="bg-gray-600 px-4 py-2 rounded-full text-white font-semibold text-xs cursor-pointer transition"
               >

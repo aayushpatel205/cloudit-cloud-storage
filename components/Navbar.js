@@ -9,7 +9,7 @@ const Navbar = () => {
   const router = useRouter();
   const pathname = usePathname();
   const { signOut } = useClerk();
-  const { isSignedIn, userId } = useAuth();
+  const { isSignedIn } = useAuth();
 
   const handleLogout = () => {
     signOut(() => {

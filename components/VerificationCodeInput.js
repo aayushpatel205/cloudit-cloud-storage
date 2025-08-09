@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useRef, useState } from "react";
 import { useSignUp } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
@@ -16,7 +15,6 @@ const VerificationCodeInput = () => {
       newCodes[index] = value;
       setCodes(newCodes);
 
-      // Move to next input if value entered
       if (value && index < 5) {
         inputsRef.current[index + 1].focus();
       }

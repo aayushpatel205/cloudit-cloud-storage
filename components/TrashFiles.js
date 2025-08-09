@@ -34,7 +34,7 @@ const TrashFiles = ({ setRefresh, setImageUrl, setIsPreviewModalOpen }) => {
     <div>
       <div className="border border-gray-700 h-[363px] rounded-lg p-3 flex flex-col">
         {/* Header Row */}
-        <div className="bg-[rgba(255,255,255,0.05)] h-[40px] rounded-md px-4 flex items-center font-semibold text-sm sticky top-0 z-10 backdrop-blur">
+        <div className="bg-[rgba(255,255,255,0.05)] h-[40px] rounded-md px-4 flex items-center font-semibold text-sm sticky top-0 z-10 backdrop-blur mb-3">
           <p className="w-[24%]">Name</p>
           <p className="w-[15%]">Type</p>
           <p className="w-[14%]">Size</p>
