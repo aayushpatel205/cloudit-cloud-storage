@@ -83,13 +83,14 @@ const Dashboard = () => {
   return (
     <ProtectedRoute>
       <div className="h-screen px-20 flex gap-12 items-center justify-center overflow-hidden">
-        <div className="rounded-xl flex flex-col border-1 border-gray-700 border-dashed min-h-[500px] w-[25%] px-5 py-5 gap-5 mt-5">
+        <div className="rounded-xl flex flex-col border border-gray-700 border-dashed h-[510px] w-[25%] px-5 py-5 gap-5 mt-5 ">
           <div className="flex gap-2 items-center">
             <MdOutlineUploadFile className="text-darkblue-500" size={35} />
             <p className="text-xl font-semibold">Upload</p>
           </div>
 
-          <div className="w-[100%] flex gap-3">
+          {/* Buttons */}
+          <div className="w-full flex gap-3">
             <button
               onClick={() => setIsModalOpen(true)}
               className="bg-darkblue-500 px-4 py-2 rounded-full text-white font-semibold text-sm cursor-pointer transition w-[50%]"
@@ -104,69 +105,71 @@ const Dashboard = () => {
             </button>
           </div>
 
-          <div
-            ref={dropRef}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            className={`flex justify-center items-center w-full h-[170px] mt-5 rounded-lg transition ${
-              isDragging
-                ? "border-2 border-darkblue-500 bg-gray-500/10"
-                : "border-1 border-gray-700 border-dashed"
-            }`}
-          >
-            <div className="flex flex-col gap-2 items-center justify-center w-full h-full">
-              {!selectedFile ? (
-                <>
-                  <MdOutlineUploadFile
-                    className="text-darkblue-500"
-                    size={40}
-                  />
-                  <span className="text-xs">
-                    Drag and drop to upload or{" "}
-                    <span
-                      className="text-darkblue-500 cursor-pointer"
-                      onClick={handleBrowseClick}
-                    >
-                      browse
+          <div className="relative">
+            <div
+              ref={dropRef}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`flex justify-center items-center w-full h-[190px] mt-5 rounded-lg transition ${
+                isDragging
+                  ? "border-2 border-darkblue-500 bg-gray-500/10"
+                  : "border-1 border-gray-700 border-dashed"
+              }`}
+            >
+              <div className="flex flex-col gap-2 items-center justify-center w-full h-full">
+                {!selectedFile ? (
+                  <>
+                    <MdOutlineUploadFile
+                      className="text-darkblue-500"
+                      size={40}
+                    />
+                    <span className="text-xs">
+                      Drag and drop to upload or{" "}
+                      <span
+                        className="text-darkblue-500 cursor-pointer"
+                        onClick={handleBrowseClick}
+                      >
+                        browse
+                      </span>
                     </span>
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    className="hidden"
+                    <input
+                      type="file"
+                      accept="image/*"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                  </>
+                ) : (
+                  <img
+                    src={URL.createObjectURL(selectedFile)}
+                    alt="Selected"
+                    className="w-full h-full object-cover rounded-lg"
                   />
-                </>
-              ) : (
-                <img
-                  src={URL.createObjectURL(selectedFile)}
-                  alt="Selected"
-                  className="w-full h-full object-cover rounded-lg"
-                />
-              )}
+                )}
+              </div>
             </div>
+
+            {selectedFile && (
+              <div className="flex gap-3 mt-3 absolute bottom-3 left-2">
+                <button
+                  onClick={uploadFile}
+                  className="bg-darkblue-500 px-4 py-2 rounded-full text-white font-semibold text-xs cursor-pointer transition"
+                >
+                  Upload
+                </button>
+                <button
+                  onClick={() => setSelectedFile(null)}
+                  className="bg-gray-600 px-4 py-2 rounded-full text-white font-semibold text-xs cursor-pointer transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
           </div>
 
-          {selectedFile && (
-            <div className="flex gap-3 mt-3">
-              <button
-                onClick={uploadFile}
-                className="bg-darkblue-500 px-4 py-2 rounded-full text-white font-semibold text-xs cursor-pointer transition"
-              >
-                Upload
-              </button>
-              <button
-                
-                onClick={() => setSelectedFile(null)}
-                className="bg-gray-600 px-4 py-2 rounded-full text-white font-semibold text-xs cursor-pointer transition"
-              >
-                Cancel
-              </button>
-            </div>
-          )}
-
+          {/* Tips */}
           <div className="flex flex-col gap-4 mt-2">
             <p className="text-lg font-semibold">Tips:</p>
             <ul className="gap-2 flex flex-col">
