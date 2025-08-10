@@ -1,0 +1,11 @@
+{
+  "cron": {
+    "jobs": [
+      {
+        "path": "/api/trash/auto-delete",
+        "schedule": "0 */2 * * *",
+        "method": "GET"
+      }
+    ]
+  }
+}

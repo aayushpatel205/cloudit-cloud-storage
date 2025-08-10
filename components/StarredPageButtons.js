@@ -8,7 +8,6 @@ import { toast } from "react-toastify";
 import { downloadImage } from "@/service/ImageDownload";
 const StarredPageButtons = ({ file, setRefresh, setStarredPageRefresh }) => {
   const { user } = useUser();
-  console.log("files here: ", file);
   return (
     <div className="flex flex-col gap-2">
       <button
@@ -36,6 +35,7 @@ const StarredPageButtons = ({ file, setRefresh, setStarredPageRefresh }) => {
                   originalFileId: file.originalFileId,
                 },
               });
+              setRefresh(Date.now());
               setStarredPageRefresh(Date.now());
               toast.success("Removed from starred");
             } catch (error) {
@@ -69,6 +69,14 @@ const StarredPageButtons = ({ file, setRefresh, setStarredPageRefresh }) => {
                   originalFileId: file.originalFileId,
                 },
               });
+
+              await axios.delete(`/api/files`, {
+                params: {
+                  userId: user.id,
+                  fileId: file.originalFileId,
+                },
+              })
+              setRefresh(Date.now());
               setStarredPageRefresh(Date.now());
               toast.success("Moved to trash");
             } catch (error) {

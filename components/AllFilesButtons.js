@@ -100,6 +100,15 @@ const AllFilesButtons = ({ file, setRefresh }) => {
               headers: { "Content-Type": "multipart/form-data" },
             });
 
+            if (file.isStarred) {
+              await axios.delete(`/api/starred`, {
+                params: {
+                  userId: user.id,
+                  originalFileId: file.id,
+                },
+              });
+            }
+
             deleteFile();
             setRefresh(Date.now());
           }}

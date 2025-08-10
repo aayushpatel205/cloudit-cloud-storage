@@ -43,7 +43,7 @@ const TrashFiles = ({ setRefresh, setImageUrl, setIsPreviewModalOpen }) => {
         </div>
 
         {/* File List */}
-        <div className="flex h-[90%] flex-col mt-1 overflow-y-scroll">
+        <div className="flex h-[90%] flex-col overflow-y-scroll">
           {loading ? (
             <p className="text-gray-400 text-lg text-center py-4 mt-[15%]">Loading...</p>
           ) : trashFiles?.length === 0 ? (
@@ -52,7 +52,7 @@ const TrashFiles = ({ setRefresh, setImageUrl, setIsPreviewModalOpen }) => {
             </p>
           ) : (
             trashFiles?.map((element, index) =>
-              element.type === "image/png" ? (
+              element?.type?.startsWith("image/") ? (
                 <FileDisplayComponent
                   setRefresh={setRefresh}
                   setImageUrl={setImageUrl}

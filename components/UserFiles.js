@@ -80,7 +80,7 @@ const UserFiles = () => {
       }
     };
     getFolders();
-  }, [refresh, active, currentFolderPath]);
+  }, [refresh, currentFolderPath]);
 
   return (
     <div className="mt-10 h-[520px] border-1 border-gray-700 border-dashed rounded-xl flex flex-col w-[65%] px-5 py-5 gap-7">

@@ -16,8 +16,6 @@ export async function POST(req) {
   const folderId = !folderIdRaw || folderIdRaw === "null" ? null : folderIdRaw;
 
   const newFile = JSON.parse(newFileRaw);
-
-  console.log("newfile here is: ", newFile);
   try {
     let url = "";
     if (selectedFile) {

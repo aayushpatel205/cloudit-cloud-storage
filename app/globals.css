@@ -40,7 +40,6 @@
   }
 }
 
-/* globals.css or similar */
 html,
 body {
   margin: 0;
@@ -67,23 +66,19 @@ body {
     116,
     139,
     0.5
-  ); /* Tailwind slate-500 opacity-50 */
+  );
   border-radius: 8px;
   border: 2px solid rgba(0, 0, 0, 0);
   background-clip: padding-box;
 }
 
-/* Global Toast Style */
-.custom-toast {
-  background-color: #171717 !important;
-  border: 1px solid #0020fd !important;
-  color: #ffffff !important;
-  border-radius: 8px !important;
-  font-size: 14px;
-  box-shadow: 0 0 10px rgba(0, 32, 253, 0.4) !important;
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
-.custom-toast-body {
-  font-weight: 500;
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;   
 }
+
 

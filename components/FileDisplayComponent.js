@@ -44,7 +44,7 @@ const FileDisplayComponent = ({
   };
 
   return (
-    <div className="flex items-center h-20 my-2 gap-2">
+    <div className="flex items-center h-20 my-1 gap-2">
       <div
         onClick={() => {
           setImageUrl(file.url);
