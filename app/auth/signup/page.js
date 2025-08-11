@@ -5,6 +5,7 @@ import { FaRegEye, FaRegEyeSlash, FaRegUser } from "react-icons/fa";
 import { useSignUp } from "@clerk/nextjs";
 import Link from "next/link";
 import VerificationCodeInput from "@/components/VerificationCodeInput";
+import { toast } from "react-toastify";
 
 const SignUp = () => {
   const { isLoaded, signUp } = useSignUp();
@@ -32,7 +33,9 @@ const SignUp = () => {
 
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       setPendingVerification(true);
+      toast.success("Verification code sent to your email");
     } catch (err) {
+      toast.error(err.errors[0].message);
       console.error(err);
     }
   };
