@@ -53,7 +53,7 @@ const FileDisplayComponent = ({
         className="w-[22%] h-full px-3 py-2 flex gap-5 items-center cursor-pointer overflow-hidden"
       >
         <Image src={file.url} alt="File" width={40} height={40} />
-        <p className="w-[50%] text-sm break-words">{file.name}</p>
+        <p className="w-[50%] text-sm break-words line-clamp-3">{file.name}</p>
       </div>
 
       <div className="w-[13%] px-3 h-full py-2 flex gap-3 items-center">

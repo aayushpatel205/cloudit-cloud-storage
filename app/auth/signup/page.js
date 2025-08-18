@@ -16,6 +16,7 @@ const SignUp = () => {
   });
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [pendingVerification, setPendingVerification] = useState(false);
+  const [loading, setLoading] = useState(false); // 🔹 Loader state
 
   if (!isLoaded) return null;
 
@@ -24,6 +25,7 @@ const SignUp = () => {
     if (!userDetails.email || !userDetails.password || !userDetails.username)
       return;
 
+    setLoading(true); // 🔹 Start loader
     try {
       await signUp.create({
         username: userDetails.username,
@@ -35,8 +37,10 @@ const SignUp = () => {
       setPendingVerification(true);
       toast.success("Verification code sent to your email");
     } catch (err) {
-      toast.error(err.errors[0].message);
+      toast.error(err.errors[0]?.message || "Sign up failed");
       console.error(err);
+    } finally {
+      setLoading(false); // 🔹 Stop loader
     }
   };
 
@@ -107,9 +111,14 @@ const SignUp = () => {
 
             <button
               onClick={handleSignUp}
-              className="mt-3 px-4 py-2 rounded-lg text-white font-semibold text-sm cursor-pointer bg-darkblue-500 transition"
+              disabled={loading} // 🔹 Disable while loading
+              className="mt-3 px-4 py-2 rounded-lg text-white font-semibold text-sm cursor-pointer bg-darkblue-500 transition flex items-center justify-center"
             >
-              Create Account
+              {loading ? (
+                  <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                "Create Account"
+              )}
             </button>
           </div>
 

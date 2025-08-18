@@ -14,11 +14,13 @@ const SignIn = () => {
     password: "",
   });
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [loading, setLoading] = useState(false); // 🔹 Loader state
 
   if (!isLoaded) return null;
 
   const handleSignIn = async (e) => {
     e.preventDefault();
+    setLoading(true); // 🔹 Start loader
     try {
       const result = await signIn.create({
         identifier: userDetails.identifier,
@@ -29,8 +31,11 @@ const SignIn = () => {
       router.push("/");
     } catch (err) {
       console.error("Error signing in: ", err.errors);
+    } finally {
+      setLoading(false); // 🔹 Stop loader
     }
   };
+
   return (
     <div className="bg-custom-gradient w-screen justify-center flex mt-16 h-[calc(100vh-64px)]">
       <div className="px-10 py-5 h-[65%] border-1 border-gray-700 w-[30%] mt-16 bg-bgblue-500 rounded-xl flex flex-col gap-4">
@@ -76,8 +81,16 @@ const SignIn = () => {
             </div>
           </div>
 
-          <button onClick={handleSignIn} className="mt-3 px-4 py-2 rounded-lg text-white font-semibold text-sm cursor-pointer bg-darkblue-500 transition">
-            Sign In
+          <button
+            onClick={handleSignIn}
+            className="mt-3 px-4 py-2 rounded-lg text-white font-semibold text-sm cursor-pointer bg-darkblue-500 transition flex items-center justify-center"
+            disabled={loading} // 🔹 Disable while loading
+          >
+            {loading ? (
+              <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              "Sign In"
+            )}
           </button>
         </div>
 
