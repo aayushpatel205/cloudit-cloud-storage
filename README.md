@@ -68,7 +68,7 @@ It is built with a **scalable directory structure**, robust authentication, and 
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/fashionx-ecommerce.git
+   git clone https://github.com/aayushpatel205/cloudit-cloud-storage.git
 
 2. **Install Dependencies**
    ```bash
