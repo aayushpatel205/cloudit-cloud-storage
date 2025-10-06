@@ -7,7 +7,6 @@ export const FileContextProvider = ({ children }) => {
   const [currentFolderPath, setCurrentFolderPath] = useState([
     { folder: "Home", id: null },
   ]);
-  const [starredFiles, setStarredFiles] = useState([]);
 
   return (
     <FileContext.Provider
@@ -15,9 +14,7 @@ export const FileContextProvider = ({ children }) => {
         userFiles,
         setUserFiles,
         currentFolderPath,
-        setCurrentFolderPath,
-        starredFiles,
-        setStarredFiles
+        setCurrentFolderPath
       }}
     >
       {children}
