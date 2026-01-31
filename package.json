@@ -26,7 +26,7 @@
     "imagekit": "^6.0.0",
     "imagekit-javascript": "^4.0.1",
     "jszip": "^3.10.1",
-    "next": "15.3.4",
+    "next": "15.3.8",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.5.2",
