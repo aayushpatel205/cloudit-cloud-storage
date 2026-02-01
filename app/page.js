@@ -6,7 +6,6 @@ import { useAuth } from "@clerk/nextjs";
 
 const Home = () => {
   const { isSignedIn, userId } = useAuth();
-  console.log("The user is signed in: ", isSignedIn, userId);
   return (
     <div className="flex justify-center items-center gap-12 mt-32">
       <div className="flex flex-col gap-5">
