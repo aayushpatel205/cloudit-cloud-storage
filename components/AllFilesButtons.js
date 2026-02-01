@@ -7,30 +7,97 @@ import axios from "axios";
 import { useUser } from "@clerk/nextjs";
 import { toast } from "react-toastify";
 
-const AllFilesButtons = ({ file, setRefresh }) => {
+const AllFilesButtons = ({ file }) => {
   const { user } = useUser();
 
   const deleteFile = async () => {
     try {
-      const response = await axios.delete(`/api/files`, {
+      const response = await axios.delete("/api/files", {
         params: {
           userId: user.id,
           fileId: file?.id,
         },
       });
-      console.log("response in deleting file: ", response.data);
+      console.log("response in deleting file:", response.data);
     } catch (error) {
-      console.log("error in deleting file: ", error);
+      console.log("error in deleting file:", error);
+      throw error;
     }
   };
+
+  const moveToTrash = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("originalFileId", file.id);
+      formData.append("fileName", file.name);
+      formData.append("fileType", file.type);
+      formData.append("fileSize", file.size);
+      formData.append("fileUrl", file.url);
+      formData.append("userId", user.id);
+      formData.append("folderId", file.folderId);
+
+      await axios.post("/api/trash", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (file.isStarred) {
+        await axios.delete("/api/starred", {
+          params: {
+            userId: user.id,
+            originalFileId: file.id,
+          },
+        });
+      }
+
+      await deleteFile();
+      // setRefresh(Date.now());
+      toast.success("Moved to trash");
+    } catch (error) {
+      toast.error("Failed to move to trash");
+    }
+  };
+
+  const toggleStar = async () => {
+    try {
+      if (file?.isStarred) {
+        await axios.delete("/api/starred", {
+          params: {
+            userId: user.id,
+            originalFileId: file.id,
+          },
+        });
+        toast.success("Removed from starred");
+      } else {
+        const formData = new FormData();
+        formData.append("originalFileId", file.id);
+        formData.append("fileName", file.name);
+        formData.append("fileType", file.type);
+        formData.append("fileSize", file.size);
+        formData.append("fileUrl", file.url);
+        formData.append("userId", user.id);
+
+        await axios.post("/api/starred", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        toast.success("Added to starred");
+      }
+      // setRefresh(Date.now());
+    } catch (error) {
+      console.log(error)
+      toast.error("Star action failed");
+    }
+  };
+
   return (
     <div className="flex flex-col gap-2">
+      {/* Download */}
       <button
         onClick={() => {
           try {
             downloadImage(file.url, file.name);
+            toast.success("File downloaded");
           } catch (error) {
-            console.log(error);
+            toast.error("Download failed");
           }
         }}
         className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex justify-center items-center gap-2 cursor-pointer"
@@ -40,78 +107,27 @@ const AllFilesButtons = ({ file, setRefresh }) => {
       </button>
 
       <div className="flex gap-2">
-        {file?.isStarred ? (
-          <button
-            onClick={async () => {
-              try {
-                await axios.delete(`/api/starred`, {
-                  params: {
-                    userId: user.id,
-                    originalFileId: file.id,
-                  },
-                });
-                setRefresh(Date.now());
-                toast.success("Removed from starred");
-              } catch (error) {
-                toast.error(error.response.data.message);
-              }
-            }}
-            className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex items-center gap-2 cursor-pointer w-[55%]"
-          >
-            <RiStarOffLine size={17} />
-            <p>Remove</p>
-          </button>
-        ) : (
-          <button
-            onClick={async () => {
-              const formData = new FormData();
-              formData.append("originalFileId", file.id);
-              formData.append("fileName", file.name);
-              formData.append("fileType", file.type);
-              formData.append("fileSize", file.size);
-              formData.append("fileUrl", file.url);
-              formData.append("userId", user.id);
-
-              await axios.post("/api/starred", formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-              });
-              setRefresh(Date.now());
-              toast.success("Added to starred");
-            }}
-            className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex justify-center items-center gap-2 cursor-pointer"
-          >
-            <RiStarLine size={16} />
-            <p className="text-sm">Star</p>
-          </button>
-        )}
-
+        {/* Star / Unstar */}
         <button
-          onClick={async () => {
-            const formData = new FormData();
-            formData.append("originalFileId", file.id);
-            formData.append("fileName", file.name);
-            formData.append("fileType", file.type);
-            formData.append("fileSize", file.size);
-            formData.append("fileUrl", file.url);
-            formData.append("userId", user.id);
-            formData.append("folderId", file.folderId);
+          onClick={toggleStar}
+          className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex justify-center items-center gap-2 cursor-pointer w-[55%]"
+        >
+          {file?.isStarred ? (
+            <>
+              <RiStarOffLine size={17} />
+              <p>Remove</p>
+            </>
+          ) : (
+            <>
+              <RiStarLine size={16} />
+              <p>Star</p>
+            </>
+          )}
+        </button>
 
-            await axios.post("/api/trash", formData, {
-              headers: { "Content-Type": "multipart/form-data" },
-            });
-
-            if (file.isStarred) {
-              await axios.delete(`/api/starred`, {
-                params: {
-                  userId: user.id,
-                  originalFileId: file.id,
-                },
-              });
-            }
-
-            deleteFile();
-            setRefresh(Date.now());
-          }}
+        {/* Trash */}
+        <button
+          onClick={moveToTrash}
           className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex justify-center items-center gap-2 cursor-pointer"
         >
           <MdDeleteOutline size={17} />

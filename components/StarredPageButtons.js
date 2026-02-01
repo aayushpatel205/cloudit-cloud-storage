@@ -6,10 +6,13 @@ import axios from "axios";
 import { useUser } from "@clerk/nextjs";
 import { toast } from "react-toastify";
 import { downloadImage } from "@/service/ImageDownload";
-const StarredPageButtons = ({ file, setRefresh, setStarredPageRefresh }) => {
+
+const StarredPageButtons = ({ file }) => {
   const { user } = useUser();
+
   return (
     <div className="flex flex-col gap-2">
+      {/* Download */}
       <button
         onClick={() => {
           try {
@@ -25,18 +28,20 @@ const StarredPageButtons = ({ file, setRefresh, setStarredPageRefresh }) => {
         <IoIosCloudDownload size={17} />
         <p>Download</p>
       </button>
+
       <div className="flex gap-2">
+        {/* Remove from starred */}
         <button
           onClick={async () => {
             try {
-              await axios.delete(`/api/starred`, {
+              await axios.delete("/api/starred", {
                 params: {
                   userId: user.id,
                   originalFileId: file.originalFileId,
                 },
               });
-              setRefresh(Date.now());
-              setStarredPageRefresh(Date.now());
+              // setRefresh(Date.now());
+              // setStarredPageRefresh(Date.now());
               toast.success("Removed from starred");
             } catch (error) {
               toast.error("Failed to remove from starred");
@@ -47,6 +52,8 @@ const StarredPageButtons = ({ file, setRefresh, setStarredPageRefresh }) => {
           <RiStarOffLine size={17} />
           <p>Remove</p>
         </button>
+
+        {/* Delete / Move to trash */}
         <button
           onClick={async () => {
             try {
@@ -60,24 +67,27 @@ const StarredPageButtons = ({ file, setRefresh, setStarredPageRefresh }) => {
               formData.append("folderId", file.folderId);
 
               await axios.post("/api/trash", formData, {
-                headers: { "Content-Type": "multipart/form-data" },
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                },
               });
 
-              await axios.delete(`/api/starred`, {
+              await axios.delete("/api/starred", {
                 params: {
                   userId: user.id,
                   originalFileId: file.originalFileId,
                 },
               });
 
-              await axios.delete(`/api/files`, {
+              await axios.delete("/api/files", {
                 params: {
                   userId: user.id,
                   fileId: file.originalFileId,
                 },
-              })
-              setRefresh(Date.now());
-              setStarredPageRefresh(Date.now());
+              });
+
+              // setRefresh(Date.now());
+              // setStarredPageRefresh(Date.now());
               toast.success("Moved to trash");
             } catch (error) {
               toast.error("Failed to move to trash");

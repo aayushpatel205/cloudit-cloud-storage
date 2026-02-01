@@ -8,7 +8,7 @@ import FolderDisplayComponent from "./FolderDisplayComponent";
 const TrashFiles = ({ setRefresh, setImageUrl, setIsPreviewModalOpen }) => {
   const [trashFiles, setTrashFiles] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [trashPageRefresh , setTrashPageRefresh] = useState(Date.now());
+  const [trashPageRefresh, setTrashPageRefresh] = useState(Date.now());
   const { user } = useUser();
 
   useEffect(() => {
@@ -30,6 +30,7 @@ const TrashFiles = ({ setRefresh, setImageUrl, setIsPreviewModalOpen }) => {
 
     getTrashFiles();
   }, [trashPageRefresh]);
+
   return (
     <div>
       <div className="border border-gray-700 h-[363px] rounded-lg p-3 flex flex-col">
@@ -45,7 +46,9 @@ const TrashFiles = ({ setRefresh, setImageUrl, setIsPreviewModalOpen }) => {
         {/* File List */}
         <div className="flex h-[90%] flex-col overflow-y-scroll">
           {loading ? (
-            <p className="text-gray-400 text-lg text-center py-4 mt-[15%]">Loading...</p>
+            <p className="text-gray-400 text-lg text-center py-4 mt-[15%]">
+              Loading...
+            </p>
           ) : trashFiles?.length === 0 ? (
             <p className="text-gray-400 text-lg text-center mt-[15%]">
               No files here...

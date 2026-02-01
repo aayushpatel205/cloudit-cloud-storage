@@ -3,50 +3,55 @@ import { useFileContext } from "@/context/FileContext";
 import FolderDisplayComponent from "@/components/FolderDisplayComponent";
 import FileDisplayComponent from "@/components/FileDisplayComponent";
 import { FiRefreshCw } from "react-icons/fi";
+import { useQueryClient } from "@tanstack/react-query";
 
 const AllFiles = ({
+  files = [],
+  isFetching,
   setActive,
-  setRefresh,
   setImageUrl,
   setIsPreviewModalOpen,
-  loading,
   setIsModalOpen,
 }) => {
-  const { userFiles, currentFolderPath, setCurrentFolderPath } =
-    useFileContext();
+  const { currentFolderPath, setCurrentFolderPath } = useFileContext();
+  const queryClient = useQueryClient();
+
   return (
     <div className="flex flex-col gap-7">
+      {/* Breadcrumb */}
       <div className="flex gap-2">
-        {currentFolderPath.map((element, index) => {
-          return (
-            <div className="gap-2 flex items-center" key={index}>
-              <button
-                onClick={() => {
-                  const arr = currentFolderPath.slice(0, index + 1);
-                  setCurrentFolderPath(arr);
-                  setRefresh(Date.now());
-                }}
-                className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md cursor-pointer"
-              >
-                {element.folder}
-              </button>
-              {index !== currentFolderPath.length - 1 && <p>/</p>}
-            </div>
-          );
-        })}
+        {currentFolderPath.map((element, index) => (
+          <div className="gap-2 flex items-center cursor-pointer" key={index}>
+            <button
+              onClick={() =>
+                setCurrentFolderPath(currentFolderPath.slice(0, index + 1))
+              }
+              className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md cursor-pointer"
+            >
+              {element.folder}
+            </button>
+            {index !== currentFolderPath.length - 1 && <p>/</p>}
+          </div>
+        ))}
       </div>
 
+      {/* Header */}
       <div className="flex justify-between border-b border-b-gray-700 pb-4">
         <p className="text-2xl font-semibold">All Files</p>
         <button
-          onClick={() => setRefresh(Date.now())}
-          className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex items-center gap-2 cursor-pointer"
+          onClick={() =>
+            queryClient.invalidateQueries({
+              queryKey: ["files"],
+            })
+          }
+          className="cursor-pointer bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex items-center gap-2"
         >
           <FiRefreshCw />
           <p>Refresh</p>
         </button>
       </div>
 
+      {/* Table */}
       <div className="border border-gray-700 h-[230px] rounded-lg p-3 flex flex-col">
         <div className="bg-[rgba(255,255,255,0.05)] h-[40px] rounded-md px-4 flex items-center font-semibold text-sm sticky top-0 z-10 backdrop-blur">
           <p className="w-[24%]">Name</p>
@@ -57,42 +62,44 @@ const AllFiles = ({
         </div>
 
         <div className="flex h-[68%] flex-col mt-3 gap-2 overflow-y-scroll">
-          {loading ? (
-            <p className="text-gray-400 text-center text-lg m-auto">
-              Loading...
-            </p>
-          ) : userFiles?.length === 0 ? (
+          {/* EMPTY STATE */}
+          {!files.length && !isFetching && (
             <div className="flex flex-col items-center">
-              <p className="text-gray-400 text-md text-center py-4 mt-4">
+              <p className="text-gray-400 py-4 mt-4">
                 No files or folders found.
               </p>
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="cursor-pointer bg-darkblue-500 px-3 py-1 rounded-md text-sm font-semibold"
+                className="bg-darkblue-500 px-3 py-1 rounded-md text-sm font-semibold"
               >
                 Create Folder
               </button>
             </div>
-          ) : (
-            userFiles?.map((file, index) =>
-              file?.type?.startsWith("image/") ? (
-                <FileDisplayComponent
-                  setRefresh={setRefresh}
-                  setImageUrl={setImageUrl}
-                  key={index}
-                  file={file}
-                  setIsPreviewModalOpen={setIsPreviewModalOpen}
-                  currentPage={"allFiles"}
-                />
-              ) : (
-                <FolderDisplayComponent
-                  setRefresh={setRefresh}
-                  key={index}
-                  file={file}
-                  setActive={setActive}
-                />
-              )
-            )
+          )}
+
+          {/* FILE LIST */}
+          {files.map((file, index) =>
+            file?.type?.startsWith("image/") ? (
+              <FileDisplayComponent
+                key={index}
+                file={file}
+                setImageUrl={setImageUrl}
+                setIsPreviewModalOpen={setIsPreviewModalOpen}
+                currentPage="allFiles"
+              />
+            ) : (
+              <FolderDisplayComponent
+                key={index}
+                file={file}
+                currentPage="allFiles"
+                setActive={setActive}
+              />
+            ),
+          )}
+
+          {/* SUBTLE BACKGROUND FETCH INDICATOR */}
+          {isFetching && files.length > 0 && (
+            <p className="text-xs text-gray-500 text-center">Updating…</p>
           )}
         </div>
       </div>

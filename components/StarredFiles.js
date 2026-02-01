@@ -7,11 +7,12 @@ import { toast } from "react-toastify";
 const StarredFiles = ({ setImageUrl, setIsPreviewModalOpen, setRefresh }) => {
   const { user } = useUser();
   const [userStarredFiles, setUserStarredFiles] = useState([]);
-  const [ starredPageRefresh , setStarredPageRefresh] = useState(Date.now());
+  const [starredPageRefresh, setStarredPageRefresh] = useState(Date.now());
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setLoading(true);
+
     const fetchStarredFiles = async () => {
       try {
         const response = await axios.get("/api/starred", {
@@ -25,8 +26,10 @@ const StarredFiles = ({ setImageUrl, setIsPreviewModalOpen, setRefresh }) => {
       }
       setLoading(false);
     };
+
     fetchStarredFiles();
   }, [starredPageRefresh]);
+
   return (
     <div>
       <div className="border border-gray-700 h-[363px] rounded-lg p-3 flex flex-col">
@@ -40,7 +43,9 @@ const StarredFiles = ({ setImageUrl, setIsPreviewModalOpen, setRefresh }) => {
 
         <div className="overflow-y-auto flex-1">
           {loading ? (
-            <p className="text-gray-400 text-lg text-center mt-[15%]">Loading...</p>
+            <p className="text-gray-400 text-lg text-center mt-[15%]">
+              Loading...
+            </p>
           ) : userStarredFiles?.length === 0 ? (
             <p className="text-gray-400 text-lg text-center mt-[15%]">
               No starred files.
@@ -48,12 +53,12 @@ const StarredFiles = ({ setImageUrl, setIsPreviewModalOpen, setRefresh }) => {
           ) : (
             userStarredFiles?.map((element, index) => (
               <FileDisplayComponent
-                setRefresh={setRefresh}
-                setImageUrl={setImageUrl}
                 key={index}
                 file={element}
-                setIsPreviewModalOpen={setIsPreviewModalOpen}
                 currentPage={"starred"}
+                setRefresh={setRefresh}
+                setImageUrl={setImageUrl}
+                setIsPreviewModalOpen={setIsPreviewModalOpen}
                 setStarredPageRefresh={setStarredPageRefresh}
               />
             ))
