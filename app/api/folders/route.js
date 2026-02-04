@@ -1,6 +1,6 @@
 import { db } from "@/db/index";
 import { NextResponse } from "next/server";
-import { folders, trashedItems } from "@/db/schema"; // assuming your folders schema is here
+import { folders, trashedItems } from "@/db/schema";
 import { eq, and, isNull, notInArray } from "drizzle-orm";
 
 export async function POST(req) {
@@ -10,12 +10,14 @@ export async function POST(req) {
     if (!folderName || !userId) {
       return NextResponse.json(
         { error: "folderName and userId are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
+    let result;
+
     if (originalFileId) {
-      const result = await db
+      result = await db
         .insert(folders)
         .values({
           id: originalFileId,
@@ -25,7 +27,7 @@ export async function POST(req) {
         })
         .returning();
     } else {
-      const result = await db
+      result = await db
         .insert(folders)
         .values({
           name: folderName,
@@ -35,15 +37,12 @@ export async function POST(req) {
         .returning();
     }
 
-    return NextResponse.json(
-      { message: "Folder created successfully" },
-      { status: 201 }
-    );
+    return NextResponse.json({ folder: result[0] }, { status: 201 });
   } catch (error) {
     console.error("Error creating folder:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -57,7 +56,7 @@ export async function GET(request) {
     if (!userId) {
       return NextResponse.json(
         { error: "userId is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -73,8 +72,8 @@ export async function GET(request) {
         and(
           eq(folders.userId, userId),
           parentId ? eq(folders.parentId, parentId) : isNull(folders.parentId),
-          notInArray(folders.id, trashedFolderIdsQuery)
-        )
+          notInArray(folders.id, trashedFolderIdsQuery),
+        ),
       );
     // console.log("folders", folders);
 
@@ -83,7 +82,7 @@ export async function GET(request) {
     console.error("Error fetching folders:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -97,7 +96,7 @@ export async function DELETE(request) {
     if (!userId || !folderId) {
       return NextResponse.json(
         { error: "userId and folderId are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -108,13 +107,13 @@ export async function DELETE(request) {
 
     return NextResponse.json(
       { message: "Folder deleted successfully", result },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("Error deleting folder:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
