@@ -8,6 +8,7 @@ import { useUser } from "@clerk/nextjs";
 import imageCompression from "browser-image-compression";
 import UserFiles from "@/components/UserFiles";
 import { toast } from "react-toastify";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Dashboard = () => {
   const fileInputRef = useRef(null);
@@ -16,6 +17,8 @@ const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const { user } = useUser();
+
+  const queryClient = useQueryClient();
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
@@ -35,6 +38,24 @@ const Dashboard = () => {
       };
 
       const compressedFile = await imageCompression(selectedFile, options);
+
+      const optimisticFile = {
+        id: crypto.randomUUID(),
+        name: compressedFile.name,
+        type: compressedFile.type,
+        size: compressedFile.size,
+        url: URL.createObjectURL(compressedFile),
+        createdAt: new Date().toISOString(),
+        parentId: null,
+        isOptimistic: true,
+      };
+
+      /* 1. OPTIMISTIC CACHE UPDATE */
+      queryClient.setQueryData(["files", user.id, null], (old = []) => [
+        optimisticFile,
+        ...old,
+      ]);
+
       const formData = new FormData();
       formData.append("selectedFile", compressedFile);
       formData.append("fileName", compressedFile.name);
@@ -42,13 +63,24 @@ const Dashboard = () => {
       formData.append("userId", user.id);
       formData.append("folderId", null);
 
-      const response = await axios.post("/api/files", formData, {
+      const res = await axios.post("/api/files", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+
+      const realFile = res.data.file;
+
+      /* 2. REPLACE OPTIMISTIC WITH REAL FILE */
+      queryClient.setQueryData(["files", user.id, null], (old = []) =>
+        old.map((f) => (f.isOptimistic ? realFile : f)),
+      );
 
       toast.success("File uploaded successfully");
       setSelectedFile(null);
     } catch (error) {
+      queryClient.setQueryData(["files", user.id, null], (old = []) =>
+        old.filter((f) => !f.isOptimistic),
+      );
+
       toast.error("File upload failed");
     }
   };

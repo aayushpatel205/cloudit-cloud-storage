@@ -6,10 +6,16 @@ import { downloadImage } from "@/service/ImageDownload";
 import axios from "axios";
 import { useUser } from "@clerk/nextjs";
 import { toast } from "react-toastify";
+import { useQueryClient } from "@tanstack/react-query";
 
 const AllFilesButtons = ({ file }) => {
   const { user } = useUser();
+  const queryClient = useQueryClient();
+  const parentKey = file.folderId ?? null;
 
+  const filesKey = ["files", user?.id, parentKey];
+
+  console.log("file in allFilesButtons: ", file);
   const deleteFile = async () => {
     try {
       const response = await axios.delete("/api/files", {
@@ -58,8 +64,16 @@ const AllFilesButtons = ({ file }) => {
   };
 
   const toggleStar = async () => {
+    // Optimistic cache update
+    queryClient.setQueryData(filesKey, (old = []) =>
+      old.map((f) =>
+        f.id === file.id ? { ...f, isStarred: !f.isStarred } : f,
+      ),
+    );
+
     try {
-      if (file?.isStarred) {
+      // Backend sync
+      if (file.isStarred) {
         await axios.delete("/api/starred", {
           params: {
             userId: user.id,
@@ -81,9 +95,15 @@ const AllFilesButtons = ({ file }) => {
         });
         toast.success("Added to starred");
       }
-      // setRefresh(Date.now());
+
+      // Optional silent reconciliation
+      queryClient.invalidateQueries({
+        queryKey: filesKey,
+        refetchType: "inactive",
+      });
     } catch (error) {
-      console.log(error)
+      // Rollback on failure
+      queryClient.invalidateQueries({ queryKey: filesKey });
       toast.error("Star action failed");
     }
   };

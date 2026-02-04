@@ -28,21 +28,16 @@ const FileDisplayComponent = ({
     starred: (
       <StarredPageButtons
         file={file}
-        // setRefresh={setRefresh}
-        // setStarredPageRefresh={setStarredPageRefresh}
       />
     ),
     trash: (
       <TrashPageButtons
         file={file}
-        // setRefresh={setRefresh}
-        // setTrashPageRefresh={setTrashPageRefresh}
       />
     ),
     allFiles: (
       <AllFilesButtons
         file={file}
-        // setRefresh={setRefresh}
       />
     ),
   };

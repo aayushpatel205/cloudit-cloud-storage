@@ -16,7 +16,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 const FolderDisplayComponent = ({ file, currentPage }) => {
   const { user } = useUser();
   const queryClient = useQueryClient();
-
   const { currentFolderPath, setCurrentFolderPath } = useFileContext();
 
   const [isDraggedOver, setIsDraggedOver] = useState(false);
@@ -26,7 +25,7 @@ const FolderDisplayComponent = ({ file, currentPage }) => {
     addSuffix: true,
   });
 
-  /* ---------------- FOLDER NAVIGATION ---------------- */
+  /* FOLDER NAVIGATION */
   const openFolder = () => {
     if (currentPage === "trash") return;
 
@@ -34,10 +33,9 @@ const FolderDisplayComponent = ({ file, currentPage }) => {
       ...currentFolderPath,
       { folder: file.name, id: file.id },
     ]);
-    // 🔥 NO FETCH HERE — query key changes, cache handles it
   };
 
-  /* ---------------- UPLOAD ON DROP ---------------- */
+  /* UPLOAD ON DROP (ADDED) */
   const uploadMutation = useMutation({
     mutationFn: async (formData) => {
       await axios.post("/api/files", formData, {
@@ -45,7 +43,9 @@ const FolderDisplayComponent = ({ file, currentPage }) => {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user-files"] });
+      queryClient.invalidateQueries({
+        queryKey: ["files", user.id, file.id],
+      });
       toast.success("File uploaded");
     },
     onError: () => {
@@ -53,30 +53,31 @@ const FolderDisplayComponent = ({ file, currentPage }) => {
     },
   });
 
-  /* ---------------- DELETE FOLDER ---------------- */
+  /* DELETE FOLDER */
   const deleteFolderMutation = useMutation({
     mutationFn: async () => {
       if (currentPage === "trash") {
         await axios.delete("/api/trash", {
           params: { userId: user.id, fileId: file.id },
         });
-      } else {
-        const formData = new FormData();
-        formData.append("originalFileId", file.id);
-        formData.append("fileName", file.name);
-        formData.append("fileType", "folder");
-        formData.append("fileSize", 0);
-        formData.append("userId", user.id);
-        formData.append("folderId", file.parentId);
-
-        await axios.post("/api/trash", formData);
-        await axios.delete("/api/folders", {
-          params: { userId: user.id, folderId: file.id },
-        });
+        return;
       }
+
+      const formData = new FormData();
+      formData.append("originalFileId", file.id);
+      formData.append("fileName", file.name);
+      formData.append("fileType", "folder");
+      formData.append("fileSize", 0);
+      formData.append("userId", user.id);
+      formData.append("folderId", file.parentId);
+
+      await axios.post("/api/trash", formData);
+      await axios.delete("/api/folders", {
+        params: { userId: user.id, folderId: file.id },
+      });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user-files"] });
+      queryClient.invalidateQueries({ queryKey: ["files"] });
       toast.success("Folder deleted");
     },
     onError: () => {
@@ -84,7 +85,7 @@ const FolderDisplayComponent = ({ file, currentPage }) => {
     },
   });
 
-  /* ---------------- RESTORE FOLDER ---------------- */
+  /* RESTORE FOLDER */
   const restoreFolderMutation = useMutation({
     mutationFn: async () => {
       await axios.delete("/api/trash", {
@@ -99,7 +100,7 @@ const FolderDisplayComponent = ({ file, currentPage }) => {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user-files"] });
+      queryClient.invalidateQueries({ queryKey: ["files"] });
       toast.success("Folder restored");
     },
     onError: () => {
@@ -107,7 +108,7 @@ const FolderDisplayComponent = ({ file, currentPage }) => {
     },
   });
 
-  /* ---------------- DOWNLOAD ---------------- */
+  /* DOWNLOAD */
   const downloadFolder = async () => {
     try {
       const zip = new JSZip();
@@ -136,7 +137,6 @@ const FolderDisplayComponent = ({ file, currentPage }) => {
       };
 
       await walk(file.id);
-
       const blob = await zip.generateAsync({ type: "blob" });
       saveAs(blob, `${file.name}.zip`);
       toast.success("Folder downloaded");
@@ -162,7 +162,7 @@ const FolderDisplayComponent = ({ file, currentPage }) => {
           setIsDraggedOver(false);
 
           const image = e.dataTransfer.files[0];
-          if (!image?.type.startsWith("image/")) return;
+          if (!image) return;
 
           const formData = new FormData();
           formData.append("selectedFile", image);
@@ -183,7 +183,7 @@ const FolderDisplayComponent = ({ file, currentPage }) => {
           className="w-[25%] px-3 py-2 flex gap-3 items-center cursor-pointer truncate"
         >
           <FaFolder size={18} color="#0020fd" />
-          <p className="text-sm truncate">{file.name}</p>
+          <p className="text-sm truncate select-none">{file.name}</p>
         </div>
 
         <div className="w-[14%] px-2 text-sm">Folder</div>
@@ -194,7 +194,7 @@ const FolderDisplayComponent = ({ file, currentPage }) => {
           {currentPage === "trash" ? (
             <button
               onClick={() => restoreFolderMutation.mutate()}
-              className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex items-center gap-2 cursor-pointer"
+              className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex items-center gap-2"
             >
               <MdOutlineRestore size={17} />
               <p>Restore</p>
@@ -202,7 +202,7 @@ const FolderDisplayComponent = ({ file, currentPage }) => {
           ) : (
             <button
               onClick={downloadFolder}
-              className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex items-center gap-2 cursor-pointer w-[55%]"
+              className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex items-center gap-2 w-[55%]"
             >
               <IoIosCloudDownload size={12} />
               <p>Download</p>
@@ -211,10 +211,10 @@ const FolderDisplayComponent = ({ file, currentPage }) => {
 
           <button
             onClick={() => deleteFolderMutation.mutate()}
-            className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex items-center gap-2 cursor-pointer"
+            className="bg-[rgba(255,255,255,0.1)] text-sm px-3 py-1 rounded-md flex items-center gap-2"
           >
             <MdDeleteOutline size={17} />
-            <p className="text-sm">Delete</p>
+            <p>Delete</p>
           </button>
         </div>
       </div>

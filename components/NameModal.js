@@ -6,30 +6,43 @@ import { IoMdArrowForward } from "react-icons/io";
 import { useUser } from "@clerk/nextjs";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useQueryClient } from "@tanstack/react-query";
 
 const NameModal = ({ isOpen, onClose, parentId }) => {
   const [folderName, setFolderName] = useState("");
   const { user } = useUser();
+  const queryClient = useQueryClient();
 
   const handleConfirm = () => {
-    if (!folderName) {
-      return;
-    }
+    if (!folderName.trim()) return;
+
+    const name = folderName.trim(); 
 
     const uploadFolder = async () => {
       try {
         const response = await axios.post("/api/folders", {
-          folderName,
+          folderName: name, 
           userId: user.id,
           parentId,
         });
+
+        const newFolder = {
+          ...response?.data?.folder,
+        };
+
+        queryClient.setQueryData(
+          ["files", user.id, parentId ?? null],
+          (old = []) => [newFolder, ...old],
+        );
+
         toast.success("Folder created successfully");
-        setFolderName("");
-      } catch (error) {
+      } catch {
         toast.error("Folder creation failed");
       }
     };
+
     uploadFolder();
+    setFolderName(""); // safe now
     onClose();
   };
 
