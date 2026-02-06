@@ -7,6 +7,7 @@
   <a href="https://orm.drizzle.team/"><img src="https://img.shields.io/badge/Drizzle%20ORM-FFCA28?style=for-the-badge&logo=drizzle&logoColor=black" /></a>
   <a href="https://imagekit.io/"><img src="https://img.shields.io/badge/ImageKit-5C67F2?style=for-the-badge&logo=cloudinary&logoColor=white" /></a>
   <a href="https://neon.tech/"><img src="https://img.shields.io/badge/NeonDB-00E599?style=for-the-badge&logo=postgresql&logoColor=white" /></a>
+  <a href="https://tanstack.com/query/latest"><img src="https://img.shields.io/badge/TanStack%20Query-EF4444?style=for-the-badge&logo=reactquery&logoColor=white" /></a>
 </p>
 
 Cloudit is a **modern cloud storage platform** that allows users to securely upload, organize, and manage their files and folders.  
@@ -52,6 +53,15 @@ It is built with a **scalable directory structure**, robust authentication, and 
   - Built to handle large-scale file/folder management  
 
 ---
+
+## ⚡ Performance & State Management
+
+- Uses **[TanStack Query](https://tanstack.com/query/latest)** for declarative server-state management  
+- Centralized **client-side caching** to minimize redundant network requests  
+- Query keys structured by **user scope and resource context**  
+- Configured **`staleTime`** and **`gcTime`** for controlled cache freshness and lifecycle  
+- **Targeted query invalidation** after mutations to ensure data consistency  
+- **Optimistic updates** for low-latency UI and improved perceived performance
 
 ## 🛠️ Tech Stack
 
